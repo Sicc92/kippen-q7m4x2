@@ -406,7 +406,25 @@ function viewPts(){
     out.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0});
     if(out.length>=2000)break;
   }
+  for(const docId in commCache){
+    const x=commCache[docId],cid="c/"+docId;
+    if(have.has(cid)||!b.contains([x.lat,x.lon]))continue;
+    if(!votes[docId])votes[docId]=x;
+    out.push({id:cid,docId,c:true,lat:x.lat,lon:x.lon,tg:{},note:x.note||"",m:true,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0,data:x});
+  }
   return out;
+}
+/* Community-Automaten für den sichtbaren Kartenausschnitt nachladen (nur wenn der Ausschnitt noch nicht abgedeckt ist) */
+let commCache={},commBox=null;
+async function fetchCommBox(){
+  if(!db||!CODE||!pos)return;
+  const b=map.getBounds();
+  if(commBox&&commBox.contains(b))return;
+  try{
+    const s=await col("community").where("lat",">=",b.getSouth()).where("lat","<=",b.getNorth()).get();
+    s.forEach(d=>{const x=d.data();if(typeof x.lat==="number"&&typeof x.lon==="number")commCache[d.id]=x});
+    commBox=L.latLngBounds(b.getSouthWest(),b.getNorthEast());
+  }catch(e){}
 }
 function drawMarkers(){
   layer.clearLayers();
@@ -460,7 +478,7 @@ $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 $("#rad").onchange=load;
 document.querySelectorAll("input[name=f]").forEach(r=>r.onchange=load);
 document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem("lang",lang)}catch(e){}applyLang()});
-map.on("moveend",()=>{if(pos&&!map.getContainer().querySelector(".leaflet-popup"))drawMarkers()});
+map.on("moveend",async()=>{if(!pos)return;await fetchCommBox();if(!map.getContainer().querySelector(".leaflet-popup"))drawMarkers()});
 applyLang();
 
 /* Zugangscode: Die App wird erst nach Eingabe des Codes sichtbar.
