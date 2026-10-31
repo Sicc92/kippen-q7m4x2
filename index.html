@@ -174,22 +174,6 @@ function restorePos(){
     setPos(s.lat,s.lon,s.q);
   }catch(e){}
 }
-const addrCache={};let addrQ=Promise.resolve();
-function streetOf(it){
-  const key=it.lat.toFixed(5)+","+it.lon.toFixed(5);
-  if(key in addrCache)return Promise.resolve(addrCache[key]);
-  const job=addrQ.then(()=>new Promise(r=>setTimeout(r,1100))).then(async()=>{
-    try{
-      const r=await fetch("https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&lat="+it.lat+"&lon="+it.lon);
-      const j=await r.json();const a=j.address||{};
-      const road=a.road||a.pedestrian||a.footway||a.path||a.street||"";
-      addrCache[key]=road?(road+(a.house_number?" "+a.house_number:"")):"";
-    }catch(e){return null}
-    return addrCache[key];
-  });
-  addrQ=job.catch(()=>{});
-  return job;
-}
 function fit(){const r=+$("#rad").value;map.fitBounds(L.latLng(pos.lat,pos.lon).toBounds(r*2.2))}
 function geoHint(g){
   const de=lang==="de";
@@ -351,11 +335,7 @@ function popupNode(it,name){
   const box=document.createElement("div");box.className="pp";
   const h=document.createElement("b");h.textContent=name;
   const dd=document.createElement("div");dd.textContent=fmt(it.d);
-  const sl=document.createElement("div");sl.style.color="#555";
-  const noSt=lang==="de"?"Straße unbekannt":"Street unknown";
-  sl.textContent=lang==="de"?"Straße wird geladen …":"Loading street …";
-  box.append(h,dd,sl);
-  streetOf(it).then(s=>{sl.textContent=s?s:noSt}).catch(()=>{sl.textContent=noSt});
+  box.append(h,dd);
   if(!(it.m&&db&&CODE))return box;
   const ph=document.createElement("div");ph.className="photos";
   const msg=document.createElement("div");msg.className="pmsg";
