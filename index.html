@@ -296,14 +296,14 @@ function compress(file){
     const url=URL.createObjectURL(file),img=new Image();
     img.onload=()=>{
       URL.revokeObjectURL(url);
-      let max=960,q=.8;
+      let max=1280,q=.85;
       for(let n=0;n<10;n++){
         const s=Math.min(1,max/Math.max(img.width,img.height));
         const c=document.createElement("canvas");
         c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));
         c.getContext("2d").drawImage(img,0,0,c.width,c.height);
         const out=c.toDataURL("image/jpeg",q);
-        if(out.startsWith(JPEG)&&out.length<=150000)return res(out);
+        if(out.startsWith(JPEG)&&out.length<=300000)return res(out);
         if(q>.5)q-=.1;else max=Math.round(max*.8);
       }
       rej(new Error("too-large"));
@@ -363,11 +363,9 @@ function popupNode(it,name){
     }catch(e){msg.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
     btn.disabled=false;refresh();
   };
-  const sb=document.createElement("button");sb.type="button";sb.textContent=t("showPhotos");
-  sb.onclick=()=>{sb.hidden=true;show(false)};
   const cached=photoCache[vid(it)];
-  if(cached){fill(cached);sb.remove()}
-  box.append(ph,sb,btn,inp,msg,rule);
+  box.append(ph,btn,inp,msg,rule);
+  if(cached)fill(cached);else show(false);
   return box;
 }
 function nearestBox(){
