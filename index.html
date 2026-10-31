@@ -140,10 +140,22 @@ function setPos(lat,lon){
   load();
 }
 function fit(){const r=+$("#rad").value;map.fitBounds(L.latLng(pos.lat,pos.lon).toBounds(r*2.2))}
+function geoHint(g){
+  const de=lang==="de";
+  if(g&&g.code===1)return de?"Standort verweigert. Chrome: Schloss in der Adressleiste → Berechtigungen → Standort → Zulassen. Außerdem Handy-Einstellungen → Standort einschalten."
+                             :"Location denied. Chrome: lock icon in the address bar → Permissions → Location → Allow. Also turn on location in the phone settings.";
+  if(g&&g.code===3)return de?"Zeitüberschreitung beim Standort. Standort am Handy einschalten, ins Freie gehen und erneut tippen.":"Location timed out. Turn on location on the phone, go outside and try again.";
+  return de?"Standort nicht verfügbar. Standort am Handy einschalten und die Seite in Chrome oder Safari (nicht in einer Messenger-App) öffnen.":"Location unavailable. Turn on location on the phone and open the page in Chrome or Safari (not inside a messenger app).";
+}
 function locate(){
-  if(!navigator.geolocation)return setStatus("errGeo",0,true);
+  const fail=g=>{setStatus("errGeo",0,true);$("#status").textContent=geoHint(g)+(location.protocol==="file:"?" (file://)":"")};
+  if(!navigator.geolocation)return fail(null);
   setStatus("loading");
-  navigator.geolocation.getCurrentPosition(p=>setPos(p.coords.latitude,p.coords.longitude),g=>{setStatus("errGeo",0,true);$("#status").textContent+=" ["+(g.message||g.code)+(location.protocol==="file:"?" – file://":"")+"]"},{enableHighAccuracy:true,timeout:10000});
+  const ok=p=>setPos(p.coords.latitude,p.coords.longitude);
+  navigator.geolocation.getCurrentPosition(ok,g=>{
+    if(g&&g.code===1)return fail(g);
+    navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:false,timeout:15000,maximumAge:600000});
+  },{enableHighAccuracy:true,timeout:8000});
 }
 async function search(){
   const q=$("#q").value.trim();if(!q)return;
@@ -160,7 +172,7 @@ async function search(){
 const EP=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter"];
 const TTL=864e5;
 let loadSeq=0,parts={},pending=0;
-function overpass(q){
+function overpass1(q){
   const body="data="+encodeURIComponent(`[out:json][timeout:20];(${q});out center tags qt;`);
   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),22000);
   return Promise.any(EP.map(async u=>{
@@ -168,6 +180,14 @@ function overpass(q){
     if(!r.ok)throw new Error(new URL(u).host+" HTTP "+r.status);
     return r.json();
   })).finally(()=>{clearTimeout(timer);ctl.abort()});
+}
+/* bei 502/504 oder Zeitüberschreitung bis zu zweimal neu versuchen */
+async function overpass(q){
+  let err;
+  for(let i=0;i<3;i++){
+    try{return await overpass1(q)}catch(e){err=e;if(i<2)await new Promise(r=>setTimeout(r,1500*(i+1)))}
+  }
+  throw err;
 }
 const ckey=(k,r)=>`ov:${k}:${pos.lat.toFixed(3)},${pos.lon.toFixed(3)}:${r}`;
 function cget(key){try{const o=JSON.parse(localStorage.getItem(key)||"null");return o&&Date.now()-o.t<TTL?o.j:null}catch(e){return null}}
