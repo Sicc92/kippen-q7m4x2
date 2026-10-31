@@ -334,14 +334,15 @@ function popupNode(it,name){
   const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.hidden=true;
   const rule=document.createElement("small");rule.textContent=t("photoRule");
   const refresh=()=>{try{it.marker.getPopup().update()}catch(e){}};
+  const fill=a=>{
+    ph.textContent="";
+    if(!a.length){ph.textContent=t("noPhotos");return}
+    a.slice(0,3).forEach(p=>{const im=new Image();im.src=p.src;im.alt=t("photos");im.onclick=()=>openPhoto(p.src);ph.appendChild(im)});
+  };
   const show=async force=>{
     ph.textContent=t("photoLoading");
-    try{
-      const a=await getPhotos(it,force);
-      ph.textContent="";
-      if(!a.length)ph.textContent=t("noPhotos");
-      a.slice(0,3).forEach(p=>{const im=new Image();im.src=p.src;im.alt=t("photos");im.onclick=()=>openPhoto(p.src);im.onload=refresh;ph.appendChild(im)});
-    }catch(e){ph.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
+    try{fill(await getPhotos(it,force))}
+    catch(e){ph.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
     refresh();
   };
   btn.onclick=()=>inp.click();
@@ -362,6 +363,8 @@ function popupNode(it,name){
   };
   const sb=document.createElement("button");sb.type="button";sb.textContent=t("showPhotos");
   sb.onclick=()=>{sb.remove();show(false)};
+  const cached=photoCache[vid(it)];
+  if(cached){fill(cached);sb.remove()}
   box.append(ph,sb,btn,inp,msg,rule);
   return box;
 }
