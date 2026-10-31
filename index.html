@@ -383,14 +383,39 @@ function render(){
   if(!pos)return;
   items.forEach((it,i)=>{
     const name=it.c?t("lc"):(it.tg.name||it.tg.brand||it.tg.operator||(it.m?t("lm"):t(it.tg.shop==="kiosk"?"sKiosk":"sTob")));
-    it.marker=L.circleMarker([it.lat,it.lon],{radius:9,color:it.c?"#d6224a":"#fff",weight:it.c?3:2,fillColor:it.c?"#ffd6df":(it.m?"#d6224a":"#0e7490"),fillOpacity:.95}).addTo(layer).bindPopup(()=>popupNode(it,name),{maxWidth:260,minWidth:200});
+    it.marker=null;
     const li=document.createElement("li");if(it.m)li.className="m";
     li.innerHTML=`<span class="name" data-i="${i}">${it.m?"🚬":"🏪"} ${esc(name)}</span>
       <span class="meta">${t(it.m?"lm":"ls")} · ${fmt(it.d)}${it.c&&it.note?" · "+esc(it.note):""}${it.tg.opening_hours?` · ${t("hours")}: ${esc(it.tg.opening_hours)}`:""}</span>
       <span class="acts"><a href="https://www.google.com/maps/dir/?api=1&destination=${it.lat},${it.lon}" target="_blank" rel="noopener">Google Maps</a><a href="https://maps.apple.com/?daddr=${it.lat},${it.lon}" target="_blank" rel="noopener">Apple Maps</a></span>${it.m&&db?voteRow(it,i):""}`;
     ul.appendChild(li);
   });
+  drawMarkers();
   if(st.k==="loading"||st.k==="found"||st.k==="none")setStatus(items.length?"found":"none",items.length);
+}
+/* Karte: zeigt alle Punkte im sichtbaren Ausschnitt (auch außerhalb des Umkreises), Liste bleibt beim Umkreis */
+function nameOf(it){return it.c?t("lc"):(it.tg.name||it.tg.brand||it.tg.operator||(it.m?t("lm"):t(it.tg.shop==="kiosk"?"sKiosk":"sTob")))}
+function viewPts(){
+  if(!DATA)return [];
+  const f=document.querySelector("input[name=f]:checked").value,b=map.getBounds(),have=new Set(items.map(i=>i.id)),out=[];
+  for(const x of DATA){
+    const isM=x.typ==="automat";
+    if(f==="s"&&isM)continue;
+    if(f==="m"&&!isM)continue;
+    if(have.has(x.id))continue;
+    if(!b.contains([x.lat,x.lon]))continue;
+    const tg={};for(const k in x)if(k!=="id"&&k!=="typ"&&k!=="lat"&&k!=="lon")tg[k]=x[k];
+    out.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0});
+    if(out.length>=2000)break;
+  }
+  return out;
+}
+function drawMarkers(){
+  layer.clearLayers();
+  [...items,...viewPts()].forEach(it=>{
+    const name=nameOf(it);
+    it.marker=L.circleMarker([it.lat,it.lon],{radius:9,color:it.c?"#d6224a":"#fff",weight:it.c?3:2,fillColor:it.c?"#ffd6df":(it.m?"#d6224a":"#0e7490"),fillOpacity:.95}).addTo(layer).bindPopup(()=>popupNode(it,name),{maxWidth:260,minWidth:200});
+  });
 }
 $("#list").addEventListener("click",e=>{
   const vb=e.target.closest("[data-v]");
@@ -437,6 +462,7 @@ $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 $("#rad").onchange=load;
 document.querySelectorAll("input[name=f]").forEach(r=>r.onchange=load);
 document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem("lang",lang)}catch(e){}applyLang()});
+map.on("moveend",()=>{if(pos&&!map.getContainer().querySelector(".leaflet-popup"))drawMarkers()});
 applyLang();
 
 /* Zugangscode: Die App wird erst nach Eingabe des Codes sichtbar.
