@@ -32,6 +32,9 @@ button:disabled{opacity:.55;cursor:default}
 #status{margin:10px 2px;color:var(--muted);min-height:1.4em}#status.err{color:var(--m);font-weight:600}
 #banner{background:var(--accent);color:var(--on);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 #banner span{flex:1;min-width:180px;font-weight:600}
+#map.leaflet-container{touch-action:pan-x pan-y!important}
+.twoHint{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-weight:600;text-align:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .25s}
+.twoHint.on{opacity:1}
 #map{height:46vh;min-height:300px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;z-index:0}
 .legend{display:flex;gap:14px;color:var(--muted);font-size:.9rem;margin-bottom:12px}
 .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
@@ -116,6 +119,18 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 let st={k:"start",n:0,err:false},pos=null,me=null,items=[],pick=false,rep=null;
 
 const map=L.map("map").setView([51.16,10.45],6);
+/* Touch-Geräte: Karte nur mit zwei Fingern bedienen, ein Finger scrollt die Seite */
+if(L.Browser.touch&&window.matchMedia("(pointer:coarse)").matches){
+  const box=map.getContainer(),hint=document.createElement("div");
+  hint.className="twoHint";box.appendChild(hint);
+  let ht;
+  const showHint=()=>{hint.textContent=lang==="de"?"Mit zwei Fingern bewegen":"Use two fingers to move the map";hint.classList.add("on");clearTimeout(ht);ht=setTimeout(()=>hint.classList.remove("on"),1200)};
+  box.addEventListener("touchstart",e=>{
+    if(e.touches.length<2){e.stopPropagation();showHint()}else{hint.classList.remove("on")}
+  },{capture:true,passive:true});
+  box.addEventListener("touchmove",e=>{if(e.touches.length>=2&&e.cancelable)e.preventDefault()},{capture:true,passive:false});
+}
+
 const tl=L.tileLayer("https://{s}.basemaps.cartocdn.com/rasterTiles/voyager/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap contributors © CARTO"}).addTo(map);
 let tlFallback=false;
 tl.on("tileerror",()=>{if(tlFallback)return;tlFallback=true;map.removeLayer(tl);L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri, © OpenStreetMap contributors"}).addTo(map)});
