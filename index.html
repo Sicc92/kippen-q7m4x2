@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zigarettenautomaten-Finder</title>
+<title>Nikotin-Navi</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1d3557">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nikotin-Navi">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root{--bg:#eef1f4;--card:#fff;--text:#14202b;--muted:#5b6875;--line:#d5dce3;--accent:#1d3557;--on:#fff;--m:#d6224a;--s:#0e7490}
@@ -73,8 +79,9 @@ footer a{color:inherit}
 <body>
 <header>
   <h1 data-i18n="title"></h1>
-  <div style="display:flex;gap:8px;align-items:center"><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
+  <div style="display:flex;gap:8px;align-items:center"><button id="inst" hidden>📲 App installieren</button><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
 </header>
+<div id="instHint" role="status" hidden style="max-width:820px;margin:0 auto;padding:0 14px 8px;color:var(--muted);font-size:.9rem"></div>
 <section id="gate" class="panel" style="width:calc(100% - 28px);max-width:420px;margin:30px auto;padding:20px" hidden>
   <p data-i18n="gateText" style="margin:0"></p>
   <div class="row"><input type="text" id="codeIn" data-ph="codePh" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1;min-width:160px"><button id="signIn" class="primary" data-i18n="signIn"></button></div>
@@ -120,7 +127,7 @@ footer a{color:inherit}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 const I={
-de:{title:"Zigarettenautomaten-Finder",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Beides",fM:"Nur Automaten",fS:"Nur Geschäfte",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
+de:{title:"Nikotin-Navi",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Beides",fM:"Nur Automaten",fS:"Nur Geschäfte",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
 en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"Both",fM:"Machines only",fS:"Stores only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",takePhoto:"Why not take a photo right now!",hasPhoto:"This machine already has a photo.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
 };
 const $=s=>document.querySelector(s);
@@ -524,6 +531,18 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
   else showGate();
 }
 initGate();
+
+const isStd=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+let dp=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;if(!isStd)$("#inst").hidden=false});
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!isStd)$("#inst").hidden=false;
+$("#inst").onclick=async()=>{
+  if(dp){dp.prompt();try{await dp.userChoice}catch(e){}dp=null;$("#inst").hidden=true;return}
+  const h=$("#instHint");
+  h.textContent="iPhone (Safari): unten auf Teilen tippen, dann „Zum Home-Bildschirm“. Android (Chrome): Menü ⋮ öffnen, dann „App installieren“ oder „Zum Startbildschirm hinzufügen“.";
+  h.hidden=false;
+};
+window.addEventListener("appinstalled",()=>{$("#inst").hidden=true;$("#instHint").hidden=true;dp=null});
 </script>
 </body>
 </html>
