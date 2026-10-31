@@ -32,6 +32,15 @@ button:disabled{opacity:.55;cursor:default}
 #status{margin:10px 2px;color:var(--muted);min-height:1.4em}#status.err{color:var(--m);font-weight:600}
 #banner{background:var(--accent);color:var(--on);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 #banner span{flex:1;min-width:180px;font-weight:600}
+.pp{min-width:200px}
+.pp .photos{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;color:#555;font-size:.85rem}
+.pp .photos img{width:72px;height:72px;object-fit:cover;border-radius:8px;cursor:pointer}
+.pp button{font-size:.85rem;padding:5px 10px;border-radius:8px}
+.pp small{display:block;color:#666;margin-top:6px}
+.pp .pmsg{font-weight:600;font-size:.85rem;margin-top:6px;color:#14202b}
+#photoDlg{padding:0;width:auto;max-width:96vw;overflow:hidden}
+#photoDlg img{display:block;max-width:92vw;max-height:78vh}
+#photoDlg .row{padding:10px}
 #map.leaflet-container{touch-action:pan-x pan-y!important}
 .twoHint{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-weight:600;text-align:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .25s}
 .twoHint.on{opacity:1}
@@ -105,12 +114,13 @@ footer a{color:inherit}
 </dialog>
 <footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · CARTO / Esri · Overpass API · Nominatim</footer>
 
+<dialog id="photoDlg"><img id="photoBig" alt=""><div class="row"><button id="photoClose" data-i18n="close"></button></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 const I={
-de:{title:"Zigarettenautomaten-Finder",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Beides",fM:"Nur Automaten",fS:"Nur Geschäfte",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
-en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"Both",fM:"Machines only",fS:"Stores only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
+de:{title:"Zigarettenautomaten-Finder",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Beides",fM:"Nur Automaten",fS:"Nur Geschäfte",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
+en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"Both",fM:"Machines only",fS:"Stores only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
 };
 const $=s=>document.querySelector(s);
 let lang=(()=>{try{const s=localStorage.getItem("lang");if(s)return s}catch(e){}return (navigator.language||"de").startsWith("de")?"de":"en"})();
@@ -315,6 +325,82 @@ async function vote(it,type){
     setStatus("votedThanks");await loadVotes();render();
   }catch(e){setStatus("voteErr",0,true);$("#status").textContent+=" ["+(e.code||e.message)+"]"}
 }
+/* Fotos: werden verkleinert und als JPEG-Text in Firestore gespeichert (Firebase Storage braucht den bezahlten Tarif) */
+const photoCache={},JPEG="data:image/jpeg;base64,";
+function compress(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let max=640,q=.7;
+      for(let n=0;n<10;n++){
+        const s=Math.min(1,max/Math.max(img.width,img.height));
+        const c=document.createElement("canvas");
+        c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        const out=c.toDataURL("image/jpeg",q);
+        if(out.startsWith(JPEG)&&out.length<=60000)return res(out);
+        if(q>.45)q-=.1;else max=Math.round(max*.8);
+      }
+      rej(new Error("too-large"));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("bad-image"))};
+    img.src=url;
+  });
+}
+async function getPhotos(it,force){
+  const id=vid(it);
+  if(!force&&photoCache[id])return photoCache[id];
+  const s=await col("photos").where("machine","==",id).limit(3).get();
+  const a=[];
+  s.forEach(d=>{const x=d.data();if(typeof x.data==="string"&&x.data.startsWith(JPEG))a.push({src:x.data,t:x.created&&x.created.toMillis?x.created.toMillis():0})});
+  a.sort((p,q)=>q.t-p.t);
+  return photoCache[id]=a;
+}
+function openPhoto(src){$("#photoBig").src=src;$("#photoDlg").showModal()}
+function popupNode(it,name){
+  const box=document.createElement("div");box.className="pp";
+  const h=document.createElement("b");h.textContent=name;
+  const dd=document.createElement("div");dd.textContent=fmt(it.d);
+  box.append(h,dd);
+  if(!(it.m&&db&&CODE))return box;
+  const ph=document.createElement("div");ph.className="photos";
+  const msg=document.createElement("div");msg.className="pmsg";
+  const btn=document.createElement("button");btn.type="button";btn.textContent=t("addPhoto");
+  const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.hidden=true;
+  const rule=document.createElement("small");rule.textContent=t("photoRule");
+  const refresh=()=>{try{it.marker.getPopup().update()}catch(e){}};
+  const show=async force=>{
+    ph.textContent=t("photoLoading");
+    try{
+      const a=await getPhotos(it,force);
+      ph.textContent="";
+      if(!a.length)ph.textContent=t("noPhotos");
+      a.slice(0,3).forEach(p=>{const im=new Image();im.src=p.src;im.alt=t("photos");im.onclick=()=>openPhoto(p.src);im.onload=refresh;ph.appendChild(im)});
+    }catch(e){ph.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
+    refresh();
+  };
+  btn.onclick=()=>inp.click();
+  inp.onchange=async()=>{
+    const f=inp.files&&inp.files[0];inp.value="";if(!f)return;
+    if(f.type&&!/^image\//.test(f.type)){msg.textContent=t("photoBad");return}
+    const key="photos:"+new Date().toISOString().slice(0,10);
+    try{if((+localStorage.getItem(key)||0)>=3){msg.textContent=t("photoLimit");return}}catch(e){}
+    btn.disabled=true;msg.textContent=t("photoSending");
+    try{
+      const data=await compress(f);
+      await col("photos").add({machine:vid(it),data,created:firebase.firestore.FieldValue.serverTimestamp()});
+      try{localStorage.setItem(key,String((+localStorage.getItem(key)||0)+1))}catch(e){}
+      msg.textContent=t("photoThanks");
+      await show(true);
+    }catch(e){msg.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
+    btn.disabled=false;refresh();
+  };
+  const sb=document.createElement("button");sb.type="button";sb.textContent=t("showPhotos");
+  sb.onclick=()=>{sb.remove();show(false)};
+  box.append(ph,sb,btn,inp,msg,rule);
+  return box;
+}
 function nearestBox(){
   const n=$("#nearest"),nm=pos&&items.find(i=>i.m);
   if(!nm){n.hidden=true;return}
@@ -328,7 +414,7 @@ function render(){
   if(!pos)return;
   items.forEach((it,i)=>{
     const name=it.c?t("lc"):(it.tg.name||it.tg.brand||it.tg.operator||(it.m?t("lm"):t(it.tg.shop==="kiosk"?"sKiosk":"sTob")));
-    it.marker=L.circleMarker([it.lat,it.lon],{radius:9,color:it.c?"#d6224a":"#fff",weight:it.c?3:2,fillColor:it.c?"#ffd6df":(it.m?"#d6224a":"#0e7490"),fillOpacity:.95}).addTo(layer).bindPopup(`<b>${esc(name)}</b><br>${fmt(it.d)}`);
+    it.marker=L.circleMarker([it.lat,it.lon],{radius:9,color:it.c?"#d6224a":"#fff",weight:it.c?3:2,fillColor:it.c?"#ffd6df":(it.m?"#d6224a":"#0e7490"),fillOpacity:.95}).addTo(layer).bindPopup(()=>popupNode(it,name),{maxWidth:260,minWidth:200});
     const li=document.createElement("li");if(it.m)li.className="m";
     li.innerHTML=`<span class="name" data-i="${i}">${it.m?"🚬":"🏪"} ${esc(name)}</span>
       <span class="meta">${t(it.m?"lm":"ls")} · ${fmt(it.d)}${it.c&&it.note?" · "+esc(it.note):""}${it.tg.opening_hours?` · ${t("hours")}: ${esc(it.tg.opening_hours)}`:""}</span>
@@ -410,7 +496,9 @@ function initGate(){
   if(!db){$("#app").hidden=false;return}
   $("#signIn").onclick=()=>tryCode($("#codeIn").value);
   $("#codeIn").addEventListener("keydown",e=>{if(e.key==="Enter")tryCode($("#codeIn").value)});
-  $("#signOut").onclick=()=>{try{localStorage.removeItem("code")}catch(e){}CODE="";items=[];votes={};render();$("#codeIn").value="";showGate()};
+$("#photoClose").onclick=()=>$("#photoDlg").close();
+$("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#photoDlg").close()});
+  $("#signOut").onclick=()=>{try{localStorage.removeItem("code")}catch(e){}CODE="";items=[];votes={};for(const k in photoCache)delete photoCache[k];render();$("#codeIn").value="";showGate()};
   let saved="";try{saved=localStorage.getItem("code")||""}catch(e){}
   if(saved)tryCode(saved).then(ok=>{if(!ok){try{localStorage.removeItem("code")}catch(e){}}});
   else showGate();
