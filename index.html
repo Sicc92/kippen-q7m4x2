@@ -9,10 +9,9 @@
 :root{--bg:#eef1f4;--card:#fff;--text:#14202b;--muted:#5b6875;--line:#d5dce3;--accent:#1d3557;--on:#fff;--m:#d6224a;--s:#0e7490}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#17212c;--text:#e8eef4;--muted:#98a6b4;--line:#2a3846;--accent:#7dd3fc;--on:#0b1620;--m:#ff6b8a;--s:#4cc3de}}
 *{box-sizing:border-box}[hidden]{display:none!important}
-html{overflow-x:hidden;overscroll-behavior-x:none}
-body{overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-y;width:100%;position:relative;margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-header{max-width:820px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:16px 14px 10px}
-h1{min-width:0;overflow-wrap:anywhere;font-size:1.3rem;margin:0;font-weight:800;letter-spacing:-.02em}
+body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+header{max-width:820px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:16px 14px 10px}
+h1{font-size:1.3rem;margin:0;font-weight:800;letter-spacing:-.02em}
 main{max-width:820px;margin:0 auto;padding:0 14px 24px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -42,7 +41,7 @@ button:disabled{opacity:.55;cursor:default}
 #photoDlg{padding:0;width:auto;max-width:96vw;overflow:hidden}
 #photoDlg img{display:block;max-width:92vw;max-height:78vh}
 #photoDlg .row{padding:10px}
-#map.leaflet-container{touch-action:pan-y!important}
+#map.leaflet-container{touch-action:pan-x pan-y!important}
 .twoHint{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-weight:600;text-align:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .25s}
 .twoHint.on{opacity:1}
 #map{height:46vh;min-height:300px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;z-index:0}
@@ -113,7 +112,7 @@ footer a{color:inherit}
   <div id="dMsg" aria-live="polite"></div>
   <div class="row"><button id="sendBtn" class="primary" data-i18n="send"></button><button id="dClose" data-i18n="cancel"></button></div>
 </dialog>
-<footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · CARTO / Esri · Overpass API · Nominatim</footer>
+<footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · CARTO / Esri · Nominatim</footer>
 
 <dialog id="photoDlg"><img id="photoBig" alt=""><div class="row"><button id="photoClose" data-i18n="close"></button></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -194,83 +193,46 @@ async function search(){
     setPos(+j[0].lat,+j[0].lon);
   }catch(e){setStatus("errNet",0,true);$("#status").textContent+=" ["+(e&&e.errors?e.errors.map(x=>x.message).join(", "):(e&&e.message||e))+"]"}
 }
-/* Suche: Automaten und Geschäfte getrennt, drei Overpass-Server im Wettlauf, Zwischenspeicher (24 h) */
-const EP=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter"];
-const TTL=864e5;
-let loadSeq=0,parts={},pending=0;
-function overpass1(q){
-  const body="data="+encodeURIComponent(`[out:json][timeout:20];(${q});out center tags qt;`);
-  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),22000);
-  return Promise.any(EP.map(async u=>{
-    const r=await fetch(u,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body,signal:ctl.signal});
-    if(!r.ok)throw new Error(new URL(u).host+" HTTP "+r.status);
-    return r.json();
-  })).finally(()=>{clearTimeout(timer);ctl.abort()});
-}
-/* bei 502/504 oder Zeitüberschreitung bis zu zweimal neu versuchen */
-async function overpass(q){
-  let err;
-  for(let i=0;i<3;i++){
-    try{return await overpass1(q)}catch(e){err=e;if(i<2)await new Promise(r=>setTimeout(r,1500*(i+1)))}
-  }
-  throw err;
-}
-const ckey=(k,r)=>`ov:${k}:${pos.lat.toFixed(3)},${pos.lon.toFixed(3)}:${r}`;
-function cget(key){try{const o=JSON.parse(localStorage.getItem(key)||"null");return o&&Date.now()-o.t<TTL?o.j:null}catch(e){return null}}
-function cset(key,j){try{localStorage.setItem(key,JSON.stringify({t:Date.now(),j}))}catch(e){}}
-function mapEls(j){
-  return ((j&&j.elements)||[]).map(e=>{
-    const tg=e.tags||{},la=e.lat??(e.center&&e.center.lat),lo=e.lon??(e.center&&e.center.lon);
-    if(la==null)return null;
-    return{id:e.type+"/"+e.id,lat:la,lon:lo,tg,m:tg.amenity==="vending_machine"||/cigarette|tobacco/.test(tg.vending||""),d:dist(pos.lat,pos.lon,la,lo)};
-  }).filter(Boolean);
-}
-function apply(seq){
-  if(seq!==loadSeq)return;
-  const seen=new Set(),osm=[];
-  [].concat(parts.m||[],parts.s||[]).forEach(i=>{if(!seen.has(i.id)){seen.add(i.id);osm.push(i)}});
-  items=osm.concat(items.filter(i=>i.c)).sort((x,y)=>x.d-y.d);
-  render();
-  if(pending>0)setStatus("partial",items.length);
+/* Suche: Automaten und Geschäfte aus der eigenen Datei data/automaten.json (kein Overpass-Abruf) */
+let loadSeq=0,DATA=null,dataPromise=null;
+function loadData(){
+  if(!dataPromise)dataPromise=fetch("data/automaten.json",{cache:"no-cache"})
+    .then(r=>{if(!r.ok)throw new Error("data HTTP "+r.status);return r.json()})
+    .then(j=>{DATA=j.daten||[];return DATA})
+    .catch(e=>{dataPromise=null;throw e});
+  return dataPromise;
 }
 async function load(){
   if(!pos)return;
   const seq=++loadSeq;
   const f=document.querySelector("input[name=f]:checked").value,r=+$("#rad").value;
-  const a=`(around:${r},${pos.lat},${pos.lon})`;
-  const jobs=[];
-  if(f!=="s")jobs.push(["m",`nwr["vending"~"cigarette"]${a};nwr["amenity"="vending_machine"]["vending"~"tobacco"]${a};`]);
-  if(f!=="m")jobs.push(["s",`nwr["shop"~"^(tobacco|kiosk)$"]${a};`]);
-  parts={};pending=jobs.length;items=[];
-  setStatus("loading");if(r>=5000)$("#status").textContent+=" "+t("bigHint");
   fit();render();
-  enrich(f,r);
-  const errs=[];
-  await Promise.all(jobs.map(async([k,q])=>{
-    const key=ckey(k,r),c=cget(key);
-    if(c&&seq===loadSeq){parts[k]=mapEls(c);apply(seq)}
-    try{
-      const j=await overpass(q);
-      cset(key,j);
-      if(seq!==loadSeq)return;
-      pending--;parts[k]=mapEls(j);apply(seq);
-    }catch(e){
-      if(seq!==loadSeq)return;
-      pending--;
-      if(!c)errs.push(e);
-    }
-  }));
+  setStatus("loading");if(r>=5000)$("#status").textContent+=" "+t("bigHint");
+  let all;
+  try{all=await loadData()}catch(e){
+    if(seq===loadSeq){setStatus("errNet",0,true);$("#status").textContent+=" ["+e.message+"]"}
+    return;
+  }
   if(seq!==loadSeq)return;
-  pending=0;apply(seq);
+  const hits=[];
+  for(const x of all){
+    const isM=x.typ==="automat";
+    if(f==="s"&&isM)continue;
+    if(f==="m"&&!isM)continue;
+    const d=dist(pos.lat,pos.lon,x.lat,x.lon);
+    if(d>r)continue;
+    const tg={};
+    for(const k in x)if(k!=="id"&&k!=="typ"&&k!=="lat"&&k!=="lon")tg[k]=x[k];
+    hits.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d});
+  }
+  items=hits.sort((a,b)=>a.d-b.d);
+  render();
+  await enrich(f,r);
+  if(seq!==loadSeq)return;
   setStatus(items.length?"found":"none",items.length);
   await loadVotes();
   if(seq!==loadSeq)return;
   render();
-  if(errs.length){
-    const e=errs[0];
-    setStatus("errNet",0,true);
-    $("#status").textContent+=" ["+(e&&e.errors?e.errors.map(x=>x.message).join(", "):(e&&e.message||e))+"]";
-  }
 }
 /* Community-Bewertungen (Firebase Firestore) */
 const FB={apiKey:"AIzaSyABQ05l_TXy5s5uu2D0mp2Pwkng9M2By58",authDomain:"zigaretten-finder-900be.firebaseapp.com",projectId:"zigaretten-finder-900be",storageBucket:"zigaretten-finder-900be.firebasestorage.app",messagingSenderId:"30758207328",appId:"1:30758207328:web:ea31c1086e25c27fb1e805"};
