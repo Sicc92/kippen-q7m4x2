@@ -538,9 +538,7 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;if(!is
 if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!isStd)$("#inst").hidden=false;
 $("#inst").onclick=async()=>{
   if(dp){dp.prompt();try{await dp.userChoice}catch(e){}dp=null;$("#inst").hidden=true;return}
-  const h=$("#instHint");
-  h.textContent="iPhone (Safari): unten auf Teilen tippen, dann „Zum Home-Bildschirm“. Android (Chrome): Menü ⋮ öffnen, dann „App installieren“ oder „Zum Startbildschirm hinzufügen“.";
-  h.hidden=false;
+  alert("So installierst du die App:\n\niPhone (Safari): unten auf das Teilen-Symbol tippen, dann „Zum Home-Bildschirm“.\n\nAndroid (Chrome): Menü ⋮ öffnen, dann „App installieren“ oder „Zum Startbildschirm hinzufügen“.");
 };
 window.addEventListener("appinstalled",()=>{$("#inst").hidden=true;$("#instHint").hidden=true;dp=null});
 </script>
