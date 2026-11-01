@@ -482,7 +482,7 @@ $("#list").addEventListener("click",e=>{
   const vb=e.target.closest("[data-v]");
   if(vb)return vote(items[+vb.dataset.vi],vb.dataset.v);
   const n=e.target.closest("[data-i]");
-  if(n){const it=items[+n.dataset.i];map.flyTo({center:[it.lon,it.lat],zoom:18});map.once("moveend",()=>openPop(it));$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
+  if(n){const it=items[+n.dataset.i];map.flyTo({center:[it.lon,it.lat],zoom:18});openPop(it);$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
 });
 
 /* Neuen Automaten melden (wird in Firebase gespeichert) */
