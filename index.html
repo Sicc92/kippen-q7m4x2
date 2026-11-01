@@ -67,6 +67,11 @@ button:disabled{opacity:.55;cursor:default}
 .vote small{color:var(--muted)}
 dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:18px;width:min(92vw,440px)}
 dialog::backdrop{background:rgba(0,0,0,.5)}
+#pnDlg{max-height:80vh;overflow:auto}
+#pnDlg h3{margin:14px 0 4px;font-size:1rem}
+#pnDlg ul{margin:0 0 4px;padding-left:20px;font-size:.92rem}
+#pnDlg li{margin:3px 0}
+#pnDlg .row{margin-top:12px}
 dialog h2{margin:0 0 10px;font-size:1.15rem}
 dialog label{display:block;margin:10px 0 4px;font-weight:600;font-size:.92rem}
 dialog textarea,dialog select{width:100%}
@@ -79,7 +84,7 @@ footer a{color:inherit}
 <body>
 <header>
   <h1 data-i18n="title"></h1>
-  <div style="display:flex;gap:8px;align-items:center"><button id="inst" hidden>📲 App installieren</button><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
+  <div style="display:flex;gap:8px;align-items:center"><button id="pn">📋 Patch Notes</button><button id="inst" hidden>📲 App installieren</button><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
 </header>
 <div id="instHint" role="status" hidden style="max-width:820px;margin:0 auto;padding:0 14px 8px;color:var(--muted);font-size:.9rem"></div>
 <section id="gate" class="panel" style="width:calc(100% - 28px);max-width:420px;margin:30px auto;padding:20px" hidden>
@@ -122,6 +127,7 @@ footer a{color:inherit}
 </dialog>
 <footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · CARTO / Esri · Nominatim</footer>
 
+<dialog id="pnDlg"><h2 id="pnTitle"></h2><div id="pnBody"></div><div class="row"><button id="pnClose" data-i18n="close"></button></div></dialog>
 <dialog id="photoDlg"><img id="photoBig" alt=""><div class="row"><button id="photoClose" data-i18n="close"></button></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -531,6 +537,45 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
   else showGate();
 }
 initGate();
+
+const APP_VERSION="1.1.0";
+const PATCH_NOTES=[
+ {v:"1.1.0",d:"01.11.2026",t:{de:"DayOne",en:"DayOne"},
+  items:{
+   de:["Neue Bundesländer: Baden-Württemberg und Bayern sind jetzt dabei. Automaten und Geschäfte werden dort auf der Karte und in der Suche angezeigt.",
+       "Datenbestand: rund 16.700 Einträge (genau 16.706: 13.734 Automaten, 2.972 Geschäfte).",
+       "Bitte testet die neuen Gebiete: Ort in BW oder BY suchen, Automaten antippen, Umkreis und Filter prüfen.",
+       "Fehler bitte melden, damit wir sie vor dem nächsten Update beheben können."],
+   en:["New states: Baden-Württemberg and Bavaria are now included. Vending machines and shops appear there on the map and in search.",
+       "Data set: about 16,700 entries (exactly 16,706: 13,734 machines, 2,972 shops).",
+       "Please test the new regions: search a place in BW or BY, tap a machine, check radius and filters.",
+       "Please report any bugs so we can fix them before the next update."]}},
+ {v:"1.0.0",d:"Erste Version",t:{de:"Start von Nikotin-Navi",en:"Initial release"},
+  items:{
+   de:["Karte mit Zigarettenautomaten, Tabakläden und Kiosken.",
+       "Suche nach Ort oder Adresse, Umkreis und Filter.",
+       "Automaten melden, Fotos hinzufügen und mit 👍 / 👎 bewerten.",
+       "Als App auf dem Startbildschirm installierbar."],
+   en:["Map with cigarette vending machines, tobacco shops and kiosks.",
+       "Search by place or address, radius and filter.",
+       "Report machines, add photos and rate them with 👍 / 👎.",
+       "Installable as an app on the home screen."]}}
+];
+function renderPatchNotes(){
+  const L=lang==="en"?"en":"de";
+  $("#pnTitle").textContent=L==="en"?"Patch notes":"Patch Notes";
+  const box=$("#pnBody");box.innerHTML="";
+  for(const n of PATCH_NOTES){
+    const h=document.createElement("h3");
+    h.textContent=`v${n.v} · ${n.d} – ${n.t[L]}`;
+    const ul=document.createElement("ul");
+    for(const it of n.items[L]){const li=document.createElement("li");li.textContent=it;ul.appendChild(li)}
+    box.append(h,ul);
+  }
+}
+$("#pn").textContent=lang==="en"?"📋 Patch notes":"📋 Patch Notes";
+$("#pn").onclick=()=>{renderPatchNotes();$("#pnDlg").showModal()};
+$("#pnClose").onclick=()=>$("#pnDlg").close();
 
 const isStd=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 let dp=null;
