@@ -538,8 +538,16 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="1.1.0";
+const APP_VERSION="1.2.0";
 const PATCH_NOTES=[
+ {v:"1.2.0",d:"01.11.2026",t:{de:"Hessen",en:"Hesse"},
+  items:{
+   de:["Neues Bundesland: Hessen ist jetzt dabei. 3.593 Einträge (2.233 Automaten, 1.360 Geschäfte) kommen dazu.",
+       "Datenbestand: rund 20.300 Einträge (genau 20.299: 15.967 Automaten, 4.332 Geschäfte).",
+       "Bitte testet Hessen: Ort in Hessen suchen, Automaten antippen, Umkreis und Filter prüfen."],
+   en:["New state: Hesse is now included. 3,593 entries (2,233 machines, 1,360 shops) were added.",
+       "Data set: about 20,300 entries (exactly 20,299: 15,967 machines, 4,332 shops).",
+       "Please test Hesse: search a place in Hesse, tap a machine, check radius and filters."]}},
  {v:"1.1.0",d:"01.11.2026",t:{de:"DayOne",en:"DayOne"},
   items:{
    de:["Neue Bundesländer: Baden-Württemberg und Bayern sind jetzt dabei. Automaten und Geschäfte werden dort auf der Karte und in der Suche angezeigt.",
