@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nikotin-Navi</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1d3557">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nikotin-Navi">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css">
+<style>
+:root{--bg:#eef1f4;--card:#fff;--text:#14202b;--muted:#5b6875;--line:#d5dce3;--accent:#1d3557;--on:#fff;--m:#d6224a;--s:#0e7490}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#17212c;--text:#e8eef4;--muted:#98a6b4;--line:#2a3846;--accent:#7dd3fc;--on:#0b1620;--m:#ff6b8a;--s:#4cc3de}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{overflow-x:hidden;overscroll-behavior-x:none}
+body{overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-y;width:100%;position:relative;margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+header{max-width:820px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:16px 14px 10px}
+h1{min-width:0;overflow-wrap:anywhere;font-size:1.3rem;margin:0;font-weight:800;letter-spacing:-.02em}
+main{max-width:820px;margin:0 auto;padding:0 14px 24px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=search],input[type=text],select,textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;max-width:100%}
+#q{flex:1;min-width:160px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:9px 13px}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on);font-weight:700}
+button:disabled{opacity:.55;cursor:default}
+.lang{display:flex;gap:4px}.lang button{padding:5px 10px;font-weight:700}
+.lang button[aria-pressed=true]{background:var(--accent);color:var(--on);border-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg label{position:relative;flex:1}
+.seg input{position:absolute;opacity:0;inset:0}
+.seg span{display:block;text-align:center;padding:9px 8px;font-size:.95rem}
+.seg input:checked+span{background:var(--accent);color:var(--on);font-weight:700}
+.seg input:focus-visible+span{outline:2px solid var(--text);outline-offset:-3px}
+#status{margin:10px 2px;color:var(--muted);min-height:1.4em}#status.err{color:var(--m);font-weight:600}
+#banner{background:var(--accent);color:var(--on);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#banner span{flex:1;min-width:180px;font-weight:600}
+.pp{min-width:200px}
+.pp .photos{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;color:#555;font-size:.85rem}
+.pp .photos img{width:72px;height:72px;object-fit:cover;border-radius:8px;cursor:pointer}
+.pp button{font-size:.85rem;padding:5px 10px;border-radius:8px}
+.pp small{display:block;color:#666;margin-top:6px}
+.pp .pmsg{font-weight:600;font-size:.85rem;margin-top:6px;color:#14202b}
+#photoDlg{padding:0;width:auto;max-width:96vw;overflow:hidden}
+#photoDlg img{display:block;max-width:92vw;max-height:78vh}
+#photoDlg .row{padding:10px}
+#map .maplibregl-canvas-container{touch-action:pan-y!important}
+.maplibregl-popup-content{padding:12px 14px;border-radius:12px}
+.twoHint{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-weight:600;text-align:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .25s}
+.twoHint.on{opacity:1}
+#map{height:46vh;min-height:300px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;z-index:0}
+.legend{display:flex;gap:14px;color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+#list{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+#list li{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--s);border-radius:12px;padding:10px 12px;display:grid;gap:3px}
+#list li.m{border-left-color:var(--m)}
+.name{font-weight:700;cursor:pointer}
+.meta{color:var(--muted);font-size:.9rem}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+.acts a,.acts button{font-size:.85rem;padding:5px 10px;border-radius:8px;border:1px solid var(--line);color:var(--text);text-decoration:none;background:var(--bg)}
+.vote{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.vote button{font-size:.85rem;padding:5px 10px;border-radius:8px}
+.vote .ok{border-color:#2b8a3e}.vote .bad{border-color:var(--m)}
+.vote small{color:var(--muted)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:18px;width:min(92vw,440px)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+#pnDlg{max-height:80vh;overflow:auto}
+#pnDlg h3{margin:14px 0 4px;font-size:1rem}
+#pnDlg ul{margin:0 0 4px;padding-left:20px;font-size:.92rem}
+#pnDlg li{margin:3px 0}
+#pnDlg .row{margin-top:12px}
+dialog h2{margin:0 0 10px;font-size:1.15rem}
+dialog label{display:block;margin:10px 0 4px;font-weight:600;font-size:.92rem}
+dialog textarea,dialog select{width:100%}
+.hint{color:var(--muted);font-size:.85rem;margin:10px 0}
+#dMsg{margin:10px 0;font-weight:600}
+footer{max-width:820px;margin:0 auto;padding:0 14px 28px;color:var(--muted);font-size:.82rem}
+footer a{color:inherit}
+</style>
+</head>
+<body>
+<header>
+  <h1 data-i18n="title"></h1>
+  <div style="display:flex;gap:8px;align-items:center"><button id="pn">📋 Patch Notes</button><button id="inst" hidden>📲 App installieren</button><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
+</header>
+<div id="instHint" role="status" hidden style="max-width:820px;margin:0 auto;padding:0 14px 8px;color:var(--muted);font-size:.9rem"></div>
+<section id="gate" class="panel" style="width:calc(100% - 28px);max-width:420px;margin:30px auto;padding:20px" hidden>
+  <p data-i18n="gateText" style="margin:0"></p>
+  <div class="row"><input type="text" id="codeIn" data-ph="codePh" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1;min-width:160px"><button id="signIn" class="primary" data-i18n="signIn"></button></div>
+  <div id="gateMsg" role="status" style="color:var(--m);font-weight:600"></div>
+</section>
+<main id="app" hidden>
+  <section class="panel">
+    <div class="row">
+      <input type="search" id="q" data-ph="search" autocomplete="off">
+      <button id="go" data-i18n="searchBtn"></button>
+      <button id="loc" class="primary">📍 <span data-i18n="mypos"></span></button>
+    </div>
+    <div class="row">
+      <label for="rad" data-i18n="radius"></label>
+      <select id="rad"><option value="500">500 m</option><option value="1000">1 km</option><option value="2000" selected>2 km</option><option value="5000">5 km</option><option value="10000">10 km</option></select>
+    </div>
+    <div class="seg">
+      <label><input type="radio" name="f" value="all" checked><span data-i18n="fAll"></span></label>
+      <label><input type="radio" name="f" value="m"><span data-i18n="fM"></span></label>
+      <label><input type="radio" name="f" value="s"><span data-i18n="fS"></span></label>
+    </div>
+  </section>
+  <div id="status" role="status"></div>
+  <div id="banner" hidden><span data-i18n="pick"></span><button id="here" data-i18n="here"></button><button id="pickCancel" data-i18n="cancel"></button></div>
+  <div id="map"></div>
+  <div class="legend"><span><i class="dot" style="background:var(--m)"></i><span data-i18n="lm"></span></span><span><i class="dot" style="background:var(--s)"></i><span data-i18n="ls"></span></span><span><i class="dot" style="background:#ffd6df;border:2px solid var(--m);box-sizing:border-box"></i><span data-i18n="lc"></span></span></div>
+  <button id="new" class="primary" data-i18n="newBtn"></button>
+  <div id="nearest" class="panel" style="margin-top:10px" hidden></div>
+  <ul id="list"></ul>
+</main>
+<dialog id="dlg">
+  <h2 id="dTitle"></h2>
+  <label for="cm" id="cmLabel" data-i18n="comment"></label>
+  <textarea id="cm" rows="3"></textarea>
+  <p class="hint" data-i18n="privacy"></p>
+  <div id="dMsg" aria-live="polite"></div>
+  <div class="row"><button id="sendBtn" class="primary" data-i18n="send"></button><button id="dClose" data-i18n="cancel"></button></div>
+</dialog>
+<footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · OpenFreeMap · Nominatim</footer>
+
+<dialog id="pnDlg"><h2 id="pnTitle"></h2><div id="pnBody"></div><div class="row"><button id="pnClose" data-i18n="close"></button></div></dialog>
+<dialog id="photoDlg"><img id="photoBig" alt=""><div class="row"><button id="photoClose" data-i18n="close"></button></div></dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
+const I={
+de:{title:"Nikotin-Navi",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Beides",fM:"Nur Automaten",fS:"Nur Geschäfte",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
+en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"Both",fM:"Machines only",fS:"Stores only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",takePhoto:"Why not take a photo right now!",hasPhoto:"This machine already has a photo.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
+};
+const $=s=>document.querySelector(s);
+let lang=(()=>{try{const s=localStorage.getItem("lang");if(s)return s}catch(e){}return (navigator.language||"de").startsWith("de")?"de":"en"})();
+const t=k=>I[lang][k]||k;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let st={k:"start",n:0,err:false},pos=null,me=null,items=[],pick=false,rep=null;
+
+/* Karte: MapLibre mit Vektor-Kacheln (OpenFreeMap, OpenStreetMap-Daten). Gebäude werden als Flächen angezeigt. */
+let ready=false,curPop=null,allPts=[];
+const map=new maplibregl.Map({container:"map",style:"https://tiles.openfreemap.org/styles/liberty",center:[10.45,51.16],zoom:6,attributionControl:{compact:true}});
+map.addControl(new maplibregl.NavigationControl({showCompass:false}),"top-right");
+map.on("load",()=>{
+  map.addSource("pts",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+  map.addSource("me",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+  map.addLayer({id:"pts",type:"circle",source:"pts",paint:{
+    "circle-radius":9,"circle-opacity":.95,
+    "circle-color":["match",["get","k"],"c","#ffd6df","m","#d6224a","#0e7490"],
+    "circle-stroke-color":["match",["get","k"],"c","#d6224a","#fff"],
+    "circle-stroke-width":["match",["get","k"],"c",3,2]}});
+  map.addLayer({id:"me",type:"circle",source:"me",paint:{"circle-radius":8,"circle-color":"#2b8a3e","circle-stroke-color":"#fff","circle-stroke-width":3}});
+  map.on("mouseenter","pts",()=>{if(!pick)map.getCanvas().style.cursor="pointer"});
+  map.on("mouseleave","pts",()=>{map.getCanvas().style.cursor=pick?"crosshair":""});
+  map.on("click","pts",e=>{if(pick)return;const f=e.features&&e.features[0];if(f)openPop(allPts[f.properties.i])});
+  ready=true;setMe();drawMarkers();
+});
+/* Touch-Geräte: Karte nur mit zwei Fingern bedienen, ein Finger scrollt die Seite */
+if(("ontouchstart" in window)&&window.matchMedia("(pointer:coarse)").matches){
+  const box=map.getContainer(),hint=document.createElement("div");
+  hint.className="twoHint";box.appendChild(hint);
+  let ht;
+  const showHint=()=>{hint.textContent=lang==="de"?"Mit zwei Fingern bewegen":"Use two fingers to move the map";hint.classList.add("on");clearTimeout(ht);ht=setTimeout(()=>hint.classList.remove("on"),1200)};
+  box.addEventListener("touchstart",e=>{
+    if(e.touches.length<2){e.stopPropagation();showHint()}else{hint.classList.remove("on")}
+  },{capture:true,passive:true});
+  box.addEventListener("touchmove",e=>{if(e.touches.length>=2&&e.cancelable)e.preventDefault()},{capture:true,passive:false});
+}
+
+
+function setStatus(k,n=0,err=false){st={k,n,err};const e=$("#status");e.textContent=t(k).replace("{n}",n);e.className=err?"err":""}
+function applyLang(){
+  document.documentElement.lang=lang;document.title=t("title");
+  document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));
+  document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=t(e.dataset.ph));
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lang));
+  setStatus(st.k,st.n,st.err);render();
+  if($("#dlg").open){$("#dTitle").textContent=t(rep.item?"rTitleOld":"rTitleNew");$("#cm").placeholder=t(rep.item?"comment":"commentNew")}
+}
+function dist(a,b,c,d){const R=6371000,r=x=>x*Math.PI/180,p=r(c-a),q=r(d-b);const h=Math.sin(p/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(q/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+const fmt=d=>d<1000?Math.round(d)+" m":(d/1000).toLocaleString(lang,{maximumFractionDigits:1})+" km";
+
+function setPos(lat,lon,q){
+  pos={lat,lon};
+  try{localStorage.setItem("lastPos",JSON.stringify({lat,lon,q:q||""}))}catch(e){}
+  setMe();
+  load();
+}
+function restorePos(){
+  try{
+    const s=JSON.parse(localStorage.getItem("lastPos")||"null");
+    if(!s||typeof s.lat!=="number"||typeof s.lon!=="number")return;
+    if(s.q)$("#q").value=s.q;
+    setPos(s.lat,s.lon,s.q);
+  }catch(e){}
+}
+function setMe(){
+  if(!ready||!pos)return;
+  map.getSource("me").setData({type:"FeatureCollection",features:[{type:"Feature",geometry:{type:"Point",coordinates:[pos.lon,pos.lat]},properties:{}}]});
+}
+function fit(){
+  const h=(+$("#rad").value)*2.2/2,dLat=h/111320,dLon=dLat/Math.cos(pos.lat*Math.PI/180);
+  map.fitBounds([[pos.lon-dLon,pos.lat-dLat],[pos.lon+dLon,pos.lat+dLat]],{padding:10,maxZoom:17});
+}
+function geoHint(g){
+  const de=lang==="de";
+  if(g&&g.code===1)return de?"Standort verweigert. Chrome: Schloss in der Adressleiste → Berechtigungen → Standort → Zulassen. Außerdem Handy-Einstellungen → Standort einschalten."
+                             :"Location denied. Chrome: lock icon in the address bar → Permissions → Location → Allow. Also turn on location in the phone settings.";
+  if(g&&g.code===3)return de?"Zeitüberschreitung beim Standort. Standort am Handy einschalten, ins Freie gehen und erneut tippen.":"Location timed out. Turn on location on the phone, go outside and try again.";
+  return de?"Standort nicht verfügbar. Standort am Handy einschalten und die Seite in Chrome oder Safari (nicht in einer Messenger-App) öffnen.":"Location unavailable. Turn on location on the phone and open the page in Chrome or Safari (not inside a messenger app).";
+}
+function locate(){
+  const fail=g=>{setStatus("errGeo",0,true);$("#status").textContent=geoHint(g)+(location.protocol==="file:"?" (file://)":"")};
+  if(!navigator.geolocation)return fail(null);
+  setStatus("loading");
+  const ok=p=>setPos(p.coords.latitude,p.coords.longitude);
+  navigator.geolocation.getCurrentPosition(ok,g=>{
+    if(g&&g.code===1)return fail(g);
+    navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:false,timeout:15000,maximumAge:600000});
+  },{enableHighAccuracy:true,timeout:8000});
+}
+async function search(){
+  const q=$("#q").value.trim();if(!q)return;
+  setStatus("loading");
+  try{
+    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q="+encodeURIComponent(q));
+    if(!r.ok)throw new Error("Nominatim HTTP "+r.status);
+    const j=await r.json();
+    if(!j.length)return setStatus("errPlace",0,true);
+    setPos(+j[0].lat,+j[0].lon,q);
+  }catch(e){setStatus("errNet",0,true);$("#status").textContent+=" ["+(e&&e.errors?e.errors.map(x=>x.message).join(", "):(e&&e.message||e))+"]"}
+}
+/* Suche: Automaten und Geschäfte aus der eigenen Datei data/automaten.json (kein Overpass-Abruf) */
+let loadSeq=0,DATA=null,dataPromise=null;
+function loadData(){
+  if(!dataPromise)dataPromise=fetch("data/automaten.json",{cache:"no-cache"})
+    .then(r=>{if(!r.ok)throw new Error("data HTTP "+r.status);return r.json()})
+    .then(j=>{DATA=j.daten||[];return DATA})
+    .catch(e=>{dataPromise=null;throw e});
+  return dataPromise;
+}
+async function load(){
+  if(!pos)return;
+  const seq=++loadSeq;
+  const f=document.querySelector("input[name=f]:checked").value,r=+$("#rad").value;
+  fit();render();
+  setStatus("loading");if(r>=5000)$("#status").textContent+=" "+t("bigHint");
+  let all;
+  try{all=await loadData()}catch(e){
+    if(seq===loadSeq){setStatus("errNet",0,true);$("#status").textContent+=" ["+e.message+"]"}
+    return;
+  }
+  if(seq!==loadSeq)return;
+  const hits=[];
+  for(const x of all){
+    const isM=x.typ==="automat";
+    if(f==="s"&&isM)continue;
+    if(f==="m"&&!isM)continue;
+    const d=dist(pos.lat,pos.lon,x.lat,x.lon);
+    if(d>r)continue;
+    const tg={};
+    for(const k in x)if(k!=="id"&&k!=="typ"&&k!=="lat"&&k!=="lon")tg[k]=x[k];
+    hits.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d});
+  }
+  items=hits.sort((a,b)=>a.d-b.d);
+  render();
+  await enrich(f,r);
+  if(seq!==loadSeq)return;
+  setStatus(items.length?"found":"none",items.length);
+  await loadVotes();
+  if(seq!==loadSeq)return;
+  render();
+}
+/* Community-Bewertungen (Firebase Firestore) */
+const FB={apiKey:"AIzaSyABQ05l_TXy5s5uu2D0mp2Pwkng9M2By58",authDomain:"zigaretten-finder-900be.firebaseapp.com",projectId:"zigaretten-finder-900be",storageBucket:"zigaretten-finder-900be.firebasestorage.app",messagingSenderId:"30758207328",appId:"1:30758207328:web:ea31c1086e25c27fb1e805"};
+let db=null,votes={};
+let CODE="";
+const col=n=>db.collection("g").doc(CODE).collection(n);
+try{if(typeof firebase!=="undefined"){firebase.initializeApp(FB);db=firebase.firestore()}}catch(e){db=null}
+const vid=it=>it.id.replace("/","_");
+async function loadVotes(){
+  votes={};if(!db)return;
+  items.filter(i=>i.c).forEach(i=>votes[vid(i)]=i.data);
+  const ids=items.filter(i=>i.m&&!i.c).map(vid);
+  for(let k=0;k<ids.length;k+=10){
+    try{const s=await col("machines").where(firebase.firestore.FieldPath.documentId(),"in",ids.slice(k,k+10)).get();s.forEach(d=>votes[d.id]=d.data())}catch(e){return}
+  }
+}
+/* von der Community gemeldete Automaten laden und mit den OSM-Treffern zusammenführen */
+async function enrich(f,r){
+  if(!db||!pos)return;
+  if(f!=="s"){
+    try{
+      const dLat=r/111320;
+      const s=await col("community").where("lat",">=",pos.lat-dLat).where("lat","<=",pos.lat+dLat).get();
+      const c=[];
+      s.forEach(d=>{
+        const x=d.data();
+        if(typeof x.lat!=="number"||typeof x.lon!=="number")return;
+        const dd=dist(pos.lat,pos.lon,x.lat,x.lon);
+        if(dd>r)return;
+        c.push({id:"c/"+d.id,docId:d.id,c:true,lat:x.lat,lon:x.lon,tg:{},note:x.note||"",m:true,d:dd,data:x});
+      });
+      items=items.filter(i=>!i.c).concat(c).sort((a,b)=>a.d-b.d);
+    }catch(e){}
+  }
+  await loadVotes();render();
+}
+function voteRow(it,i){
+  const v=votes[vid(it)]||{ok:0,bad:0};
+  const when=v.last&&v.last.toDate?`${t("last")}: ${v.last.toDate().toLocaleDateString(lang)}`:"";
+  const info=[v.ok||v.bad?"":t("noVotes"),when].filter(Boolean).join(" · ");
+  return `<span class="vote"><button class="ok" data-v="ok" data-vi="${i}">${t("voteOk")} (${v.ok||0})</button><button class="bad" data-v="bad" data-vi="${i}">${t("voteBad")} (${v.bad||0})</button><small>${esc(info)}</small></span>`;
+}
+async function vote(it,type){
+  const id=vid(it),key="vote:"+id,today=new Date().toISOString().slice(0,10);
+  try{if(localStorage.getItem(key)===today){setStatus("votedAlready");return}}catch(e){}
+  const ref=col(it.c?"community":"machines").doc(it.c?it.docId:id),F=firebase.firestore.FieldValue;
+  try{
+    const snap=await ref.get();
+    if(snap.exists)await ref.update({[type]:F.increment(1),last:F.serverTimestamp(),lastType:type});
+    else if(!it.c)await ref.set({ok:type==="ok"?1:0,bad:type==="bad"?1:0,last:F.serverTimestamp(),lastType:type});
+    if(it.c)it.data=(await ref.get()).data();
+    try{localStorage.setItem(key,today)}catch(e){}
+    setStatus("votedThanks");await loadVotes();render();
+  }catch(e){setStatus("voteErr",0,true);$("#status").textContent+=" ["+(e.code||e.message)+"]"}
+}
+/* Fotos: werden verkleinert und als JPEG-Text in Firestore gespeichert (Firebase Storage braucht den bezahlten Tarif) */
+const photoCache={},JPEG="data:image/jpeg;base64,";
+function compress(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      let max=1280,q=.85;
+      for(let n=0;n<10;n++){
+        const s=Math.min(1,max/Math.max(img.width,img.height));
+        const c=document.createElement("canvas");
+        c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        const out=c.toDataURL("image/jpeg",q);
+        if(out.startsWith(JPEG)&&out.length<=300000)return res(out);
+        if(q>.5)q-=.1;else max=Math.round(max*.8);
+      }
+      rej(new Error("too-large"));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("bad-image"))};
+    img.src=url;
+  });
+}
+async function getPhotos(it,force){
+  const id=vid(it);
+  if(!force&&photoCache[id])return photoCache[id];
+  const s=await col("photos").where("machine","==",id).limit(1).get();
+  const a=[];
+  s.forEach(d=>{const x=d.data();if(typeof x.data==="string"&&x.data.startsWith(JPEG))a.push({src:x.data,t:x.created&&x.created.toMillis?x.created.toMillis():0})});
+  a.sort((p,q)=>q.t-p.t);
+  return photoCache[id]=a;
+}
+function openPhoto(src){$("#photoBig").src=src;$("#photoDlg").showModal()}
+function popupNode(it,name){
+  const box=document.createElement("div");box.className="pp";
+  const h=document.createElement("b");h.textContent=name;
+  const dd=document.createElement("div");dd.textContent=fmt(it.d);
+  box.append(h,dd);
+  if(!(it.m&&db&&CODE))return box;
+  const ph=document.createElement("div");ph.className="photos";
+  const msg=document.createElement("div");msg.className="pmsg";
+  const btn=document.createElement("button");btn.type="button";btn.textContent=t("addPhoto");btn.hidden=true;
+  const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.hidden=true;
+  const rule=document.createElement("small");rule.textContent=t("photoRule");
+  const refresh=()=>{};
+  const fill=a=>{
+    ph.textContent="";
+    if(!a.length){ph.textContent=t("takePhoto");btn.hidden=false;return}
+    btn.hidden=true;
+    a.slice(0,1).forEach(p=>{const im=new Image();im.src=p.src;im.alt=t("photos");im.onclick=()=>openPhoto(p.src);ph.appendChild(im)});
+    const note=document.createElement("small");note.textContent=t("hasPhoto");ph.appendChild(note);
+  };
+  const show=async force=>{
+    ph.textContent=t("photoLoading");
+    try{fill(await getPhotos(it,force))}
+    catch(e){ph.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
+    refresh();
+  };
+  btn.onclick=()=>inp.click();
+  inp.onchange=async()=>{
+    const f=inp.files&&inp.files[0];inp.value="";if(!f)return;
+    if(f.type&&!/^image\//.test(f.type)){msg.textContent=t("photoBad");return}
+    const key="photos:"+new Date().toISOString().slice(0,10);
+    try{if((+localStorage.getItem(key)||0)>=3){msg.textContent=t("photoLimit");return}}catch(e){}
+    btn.disabled=true;msg.textContent=t("photoSending");
+    try{
+      const data=await compress(f);
+      await col("photos").doc(vid(it)).set({machine:vid(it),data,created:firebase.firestore.FieldValue.serverTimestamp()});
+      try{localStorage.setItem(key,String((+localStorage.getItem(key)||0)+1))}catch(e){}
+      msg.textContent=t("photoThanks");
+      await show(true);
+    }catch(e){msg.textContent=t("photoErr")+" ["+(e.code||e.message)+"]"}
+    btn.disabled=false;refresh();
+  };
+  const cached=photoCache[vid(it)];
+  box.append(ph,btn,inp,msg,rule);
+  if(cached)fill(cached);else show(false);
+  return box;
+}
+function nearestBox(){
+  const n=$("#nearest"),nm=pos&&items.find(i=>i.m);
+  if(!nm){n.hidden=true;return}
+  const nn=nm.c?t("lc"):(nm.tg.name||nm.tg.brand||nm.tg.operator||t("lm"));
+  n.hidden=false;
+  n.innerHTML=`<b>🧭 ${t("nearest")}: ${esc(nn)} · ${fmt(nm.d)}</b><span class="acts"><a href="https://www.google.com/maps/dir/?api=1&destination=${nm.lat},${nm.lon}" target="_blank" rel="noopener">${t("navTo")} Google Maps</a><a href="https://maps.apple.com/?daddr=${nm.lat},${nm.lon}" target="_blank" rel="noopener">${t("navTo")} Apple Maps</a></span>`;
+}
+function render(){
+  const ul=$("#list");ul.innerHTML="";
+  nearestBox();
+  if(!pos)return;
+  items.forEach((it,i)=>{
+    const name=it.c?t("lc"):(it.tg.name||it.tg.brand||it.tg.operator||(it.m?t("lm"):t(it.tg.shop==="kiosk"?"sKiosk":"sTob")));
+    it.marker=null;
+    const li=document.createElement("li");if(it.m)li.className="m";
+    li.innerHTML=`<span class="name" data-i="${i}">${it.m?"🚬":"🏪"} ${esc(name)}</span>
+      <span class="meta">${t(it.m?"lm":"ls")} · ${fmt(it.d)}${it.c&&it.note?" · "+esc(it.note):""}${it.tg.opening_hours?` · ${t("hours")}: ${esc(it.tg.opening_hours)}`:""}</span>
+      <span class="acts"><a href="https://www.google.com/maps/dir/?api=1&destination=${it.lat},${it.lon}" target="_blank" rel="noopener">Google Maps</a><a href="https://maps.apple.com/?daddr=${it.lat},${it.lon}" target="_blank" rel="noopener">Apple Maps</a></span>${it.m&&db?voteRow(it,i):""}`;
+    ul.appendChild(li);
+  });
+  drawMarkers();
+  if(st.k==="loading"||st.k==="found"||st.k==="none")setStatus(items.length?"found":"none",items.length);
+}
+/* Karte: zeigt alle Punkte im sichtbaren Ausschnitt (auch außerhalb des Umkreises), Liste bleibt beim Umkreis */
+function nameOf(it){return it.c?t("lc"):(it.tg.name||it.tg.brand||it.tg.operator||(it.m?t("lm"):t(it.tg.shop==="kiosk"?"sKiosk":"sTob")))}
+function viewPts(){
+  if(!DATA)return [];
+  const f=document.querySelector("input[name=f]:checked").value,b=map.getBounds(),have=new Set(items.map(i=>i.id)),out=[];
+  for(const x of DATA){
+    const isM=x.typ==="automat";
+    if(f==="s"&&isM)continue;
+    if(f==="m"&&!isM)continue;
+    if(have.has(x.id))continue;
+    if(!b.contains([x.lon,x.lat]))continue;
+    const tg={};for(const k in x)if(k!=="id"&&k!=="typ"&&k!=="lat"&&k!=="lon")tg[k]=x[k];
+    out.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0});
+    if(out.length>=2000)break;
+  }
+  for(const docId in commCache){
+    const x=commCache[docId],cid="c/"+docId;
+    if(have.has(cid)||!b.contains([x.lon,x.lat]))continue;
+    if(!votes[docId])votes[docId]=x;
+    out.push({id:cid,docId,c:true,lat:x.lat,lon:x.lon,tg:{},note:x.note||"",m:true,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0,data:x});
+  }
+  return out;
+}
+/* Community-Automaten für den sichtbaren Kartenausschnitt nachladen (nur wenn der Ausschnitt noch nicht abgedeckt ist) */
+let commCache={},commBox=null;
+async function fetchCommBox(){
+  if(!db||!CODE||!pos)return;
+  const b=map.getBounds();
+  if(commBox&&b.getSouth()>=commBox.s&&b.getNorth()<=commBox.n&&b.getWest()>=commBox.w&&b.getEast()<=commBox.e)return;
+  try{
+    const s=await col("community").where("lat",">=",b.getSouth()).where("lat","<=",b.getNorth()).get();
+    s.forEach(d=>{const x=d.data();if(typeof x.lat==="number"&&typeof x.lon==="number")commCache[d.id]=x});
+    commBox={s:b.getSouth(),n:b.getNorth(),w:b.getWest(),e:b.getEast()};
+  }catch(e){}
+}
+function drawMarkers(){
+  if(!ready)return;
+  allPts=[...items,...viewPts()];
+  map.getSource("pts").setData({type:"FeatureCollection",features:allPts.map((it,i)=>({type:"Feature",geometry:{type:"Point",coordinates:[it.lon,it.lat]},properties:{i,k:it.c?"c":(it.m?"m":"s")}}))});
+}
+function openPop(it){
+  if(!it)return;
+  if(curPop)curPop.remove();
+  curPop=new maplibregl.Popup({maxWidth:"260px",offset:10}).setLngLat([it.lon,it.lat]).setDOMContent(popupNode(it,nameOf(it))).addTo(map);
+}
+$("#list").addEventListener("click",e=>{
+  const vb=e.target.closest("[data-v]");
+  if(vb)return vote(items[+vb.dataset.vi],vb.dataset.v);
+  const n=e.target.closest("[data-i]");
+  if(n){const it=items[+n.dataset.i];map.flyTo({center:[it.lon,it.lat],zoom:18});map.once("moveend",()=>openPop(it));$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
+});
+
+/* Neuen Automaten melden (wird in Firebase gespeichert) */
+function openReport(o){
+  rep=o;
+  $("#dTitle").textContent=t("rTitleNew");
+  $("#cmLabel").hidden=false;$("#cm").value="";$("#cm").placeholder=t("commentNew");
+  $("#dMsg").textContent="";$("#sendBtn").disabled=false;$("#sendBtn").hidden=false;
+  $("#dlg").showModal();
+}
+async function send(){
+  const o=rep,c=$("#cm").value.trim().slice(0,200);
+  if(!db){$("#dMsg").textContent=t("sendErr");return}
+  const key="reports:"+new Date().toISOString().slice(0,10);
+  try{if((+localStorage.getItem(key)||0)>=3){$("#dMsg").textContent=t("limit");return}}catch(e){}
+  $("#sendBtn").disabled=true;$("#dMsg").textContent=t("sending");
+  try{
+    await col("community").add({lat:+o.lat.toFixed(6),lon:+o.lon.toFixed(6),note:c,ok:0,bad:0,created:firebase.firestore.FieldValue.serverTimestamp()});
+    try{localStorage.setItem(key,String((+localStorage.getItem(key)||0)+1))}catch(e){}
+    $("#dMsg").textContent=t("sent");$("#sendBtn").hidden=true;
+    if(pos)enrich(document.querySelector("input[name=f]:checked").value,+$("#rad").value);
+  }catch(e){
+    $("#dMsg").textContent=t("sendErr")+" ["+(e.code||e.message)+"]";
+    $("#sendBtn").disabled=false;
+  }
+}
+function endPick(){pick=false;$("#banner").hidden=true;map.getContainer().style.cursor=""}
+$("#new").onclick=()=>{pick=true;$("#banner").hidden=false;$("#here").hidden=!pos;map.getContainer().style.cursor="crosshair";$("#map").scrollIntoView({behavior:"smooth",block:"center"})};
+$("#pickCancel").onclick=endPick;
+$("#here").onclick=()=>{endPick();openReport({lat:pos.lat,lon:pos.lon})};
+map.on("click",e=>{if(!pick)return;endPick();openReport({lat:e.lngLat.lat,lon:e.lngLat.lng})});
+$("#sendBtn").onclick=send;
+$("#dClose").onclick=()=>$("#dlg").close();
+
+$("#loc").onclick=locate;
+$("#go").onclick=search;
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
+$("#rad").onchange=load;
+document.querySelectorAll("input[name=f]").forEach(r=>r.onchange=load);
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem("lang",lang)}catch(e){}applyLang()});
+map.on("moveend",async()=>{if(!pos)return;await fetchCommBox();if(!curPop||!curPop.isOpen())drawMarkers()});
+applyLang();
+
+/* Zugangscode: Die App wird erst nach Eingabe des Codes sichtbar.
+   Der eigentliche Schutz liegt in den Firestore-Regeln: Die Daten liegen unter /g/<code>/...
+   und nur der in den Regeln eingetragene Code hat Zugriff. */
+function showGate(k){
+  $("#gateMsg").textContent=k?t(k):"";
+  $("#gate").hidden=false;$("#app").hidden=true;$("#signOut").hidden=true;
+}
+async function tryCode(c){
+  c=(c||"").trim();
+  if(c.length<8||/[\/\s]/.test(c)||c==="."||c===".."){showGate("denied");return false}
+  CODE=c;
+  try{await col("community").limit(1).get()}
+  catch(e){
+    CODE="";
+    showGate(e.code==="permission-denied"?"denied":"authErr");
+    if(e.code!=="permission-denied")$("#gateMsg").textContent+=" ["+(e.code||e.message)+"]";
+    return false;
+  }
+  try{localStorage.setItem("code",c)}catch(e){}
+  $("#gate").hidden=true;$("#app").hidden=false;$("#signOut").hidden=false;map.resize();restorePos();
+  return true;
+}
+function initGate(){
+  if(!db){$("#app").hidden=false;return}
+  $("#signIn").onclick=()=>tryCode($("#codeIn").value);
+  $("#codeIn").addEventListener("keydown",e=>{if(e.key==="Enter")tryCode($("#codeIn").value)});
+$("#photoClose").onclick=()=>$("#photoDlg").close();
+$("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#photoDlg").close()});
+  $("#signOut").onclick=()=>{try{localStorage.removeItem("code")}catch(e){}CODE="";items=[];votes={};for(const k in photoCache)delete photoCache[k];render();$("#codeIn").value="";showGate()};
+  let saved="";try{saved=localStorage.getItem("code")||""}catch(e){}
+  if(saved)tryCode(saved).then(ok=>{if(!ok){try{localStorage.removeItem("code")}catch(e){}}});
+  else showGate();
+}
+initGate();
+
+const APP_VERSION="1.4.0";
+const PATCH_NOTES=[
+ {v:"1.4.0",d:"01.11.2026",t:{de:"Alle Bundesländer",en:"All states"},
+  items:{
+   de:["Die restlichen 12 Bundesländer sind jetzt dabei: Berlin, Brandenburg, Bremen, Hamburg, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Saarland, Sachsen, Sachsen-Anhalt, Schleswig-Holstein und Thüringen. 21.666 Einträge (11.288 Automaten, 10.378 Geschäfte) kommen dazu.",
+       "Datenbestand: rund 44.300 Einträge (genau 44.349: 29.121 Automaten, 15.228 Geschäfte).",
+       "Wir haben so viele Daten wie möglich gesammelt, die Liste ist aber noch lückenhaft. Besonders in einigen Regionen fehlen Automaten und Geschäfte. Hier ist die Community gefragt: Fehlt ein Automat oder Laden, meldet ihn bitte über „Neuen Automaten melden“."],
+   en:["The remaining 12 states are now included: Berlin, Brandenburg, Bremen, Hamburg, Mecklenburg-Vorpommern, Lower Saxony, North Rhine-Westphalia, Saarland, Saxony, Saxony-Anhalt, Schleswig-Holstein and Thuringia. 21,666 entries (11,288 machines, 10,378 shops) were added.",
+       "Data set: about 44,300 entries (exactly 44,349: 29,121 machines, 15,228 shops).",
+       "We collected as much data as we could, but the list is still incomplete. Some regions are missing machines and shops. This is where the community comes in: if a machine or shop is missing, please report it via “Report a new machine”."]}},
+ {v:"1.3.0",d:"01.11.2026",t:{de:"Rheinland-Pfalz",en:"Rhineland-Palatinate"},
+  items:{
+   de:["Neues Bundesland: Rheinland-Pfalz ist jetzt dabei. 2.384 Einträge (1.866 Automaten, 518 Geschäfte) kommen dazu.",
+       "Datenbestand: rund 22.700 Einträge (genau 22.683: 17.833 Automaten, 4.850 Geschäfte).",
+       "Bitte testet Rheinland-Pfalz: Ort in Rheinland-Pfalz suchen, Automaten antippen, Umkreis und Filter prüfen."],
+   en:["New state: Rhineland-Palatinate is now included. 2,384 entries (1,866 machines, 518 shops) were added.",
+       "Data set: about 22,700 entries (exactly 22,683: 17,833 machines, 4,850 shops).",
+       "Please test Rhineland-Palatinate: search a place there, tap a machine, check radius and filters."]}},
+ {v:"1.2.0",d:"01.11.2026",t:{de:"Hessen",en:"Hesse"},
+  items:{
+   de:["Neues Bundesland: Hessen ist jetzt dabei. 3.593 Einträge (2.233 Automaten, 1.360 Geschäfte) kommen dazu.",
+       "Datenbestand: rund 20.300 Einträge (genau 20.299: 15.967 Automaten, 4.332 Geschäfte).",
+       "Bitte testet Hessen: Ort in Hessen suchen, Automaten antippen, Umkreis und Filter prüfen."],
+   en:["New state: Hesse is now included. 3,593 entries (2,233 machines, 1,360 shops) were added.",
+       "Data set: about 20,300 entries (exactly 20,299: 15,967 machines, 4,332 shops).",
+       "Please test Hesse: search a place in Hesse, tap a machine, check radius and filters."]}},
+ {v:"1.1.0",d:"01.11.2026",t:{de:"DayOne",en:"DayOne"},
+  items:{
+   de:["Neue Bundesländer: Baden-Württemberg und Bayern sind jetzt dabei. Automaten und Geschäfte werden dort auf der Karte und in der Suche angezeigt.",
+       "Datenbestand: rund 16.700 Einträge (genau 16.706: 13.734 Automaten, 2.972 Geschäfte).",
+       "Bitte testet die neuen Gebiete: Ort in BW oder BY suchen, Automaten antippen, Umkreis und Filter prüfen.",
+       "Fehler bitte melden, damit wir sie vor dem nächsten Update beheben können."],
+   en:["New states: Baden-Württemberg and Bavaria are now included. Vending machines and shops appear there on the map and in search.",
+       "Data set: about 16,700 entries (exactly 16,706: 13,734 machines, 2,972 shops).",
+       "Please test the new regions: search a place in BW or BY, tap a machine, check radius and filters.",
+       "Please report any bugs so we can fix them before the next update."]}},
+ {v:"1.0.0",d:"Erste Version",t:{de:"Start von Nikotin-Navi",en:"Initial release"},
+  items:{
+   de:["Karte mit Zigarettenautomaten, Tabakläden und Kiosken.",
+       "Suche nach Ort oder Adresse, Umkreis und Filter.",
+       "Automaten melden, Fotos hinzufügen und mit 👍 / 👎 bewerten.",
+       "Als App auf dem Startbildschirm installierbar."],
+   en:["Map with cigarette vending machines, tobacco shops and kiosks.",
+       "Search by place or address, radius and filter.",
+       "Report machines, add photos and rate them with 👍 / 👎.",
+       "Installable as an app on the home screen."]}}
+];
+function renderPatchNotes(){
+  const L=lang==="en"?"en":"de";
+  $("#pnTitle").textContent=L==="en"?"Patch notes":"Patch Notes";
+  const box=$("#pnBody");box.innerHTML="";
+  for(const n of PATCH_NOTES){
+    const h=document.createElement("h3");
+    h.textContent=`v${n.v} · ${n.d} – ${n.t[L]}`;
+    const ul=document.createElement("ul");
+    for(const it of n.items[L]){const li=document.createElement("li");li.textContent=it;ul.appendChild(li)}
+    box.append(h,ul);
+  }
+}
+$("#pn").textContent=lang==="en"?"📋 Patch notes":"📋 Patch Notes";
+$("#pn").onclick=()=>{renderPatchNotes();$("#pnDlg").showModal()};
+$("#pnClose").onclick=()=>$("#pnDlg").close();
+
+const isStd=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+let dp=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;if(!isStd)$("#inst").hidden=false});
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!isStd)$("#inst").hidden=false;
+$("#inst").onclick=async()=>{
+  if(dp){dp.prompt();try{await dp.userChoice}catch(e){}dp=null;$("#inst").hidden=true;return}
+  alert("So installierst du die App:\n\niPhone (Safari): unten auf das Teilen-Symbol tippen, dann „Zum Home-Bildschirm“.\n\nAndroid (Chrome): Menü ⋮ öffnen, dann „App installieren“ oder „Zum Startbildschirm hinzufügen“.");
+};
+window.addEventListener("appinstalled",()=>{$("#inst").hidden=true;$("#instHint").hidden=true;dp=null});
+</script>
+</body>
+</html>
