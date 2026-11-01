@@ -108,6 +108,7 @@ footer a{color:inherit}
       <label><input type="radio" name="f" value="all" checked><span data-i18n="fAll"></span></label>
       <label><input type="radio" name="f" value="m"><span data-i18n="fM"></span></label>
       <label><input type="radio" name="f" value="s"><span data-i18n="fS"></span></label>
+      <label><input type="radio" name="f" value="c"><span data-i18n="fC"></span></label>
     </div>
   </section>
   <div id="status" role="status"></div>
@@ -134,8 +135,8 @@ footer a{color:inherit}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 const I={
-de:{title:"Nikotin-Navi",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Beides",fM:"Nur Automaten",fS:"Nur Geschäfte",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
-en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"Both",fM:"Machines only",fS:"Stores only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",takePhoto:"Why not take a photo right now!",hasPhoto:"This machine already has a photo.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
+de:{title:"Nikotin-Navi",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Alles",fM:"Nur Automaten",fS:"Nur Geschäfte",fC:"Nur Community",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
+en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"All",fM:"Machines only",fS:"Stores only",fC:"Community only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",takePhoto:"Why not take a photo right now!",hasPhoto:"This machine already has a photo.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
 };
 const $=s=>document.querySelector(s);
 let lang=(()=>{try{const s=localStorage.getItem("lang");if(s)return s}catch(e){}return (navigator.language||"de").startsWith("de")?"de":"en"})();
@@ -262,6 +263,7 @@ async function load(){
     const isM=x.typ==="automat";
     if(f==="s"&&isM)continue;
     if(f==="m"&&!isM)continue;
+    if(f==="c")continue;
     const d=dist(pos.lat,pos.lon,x.lat,x.lon);
     if(d>r)continue;
     const tg={};
@@ -442,13 +444,14 @@ function viewPts(){
     const isM=x.typ==="automat";
     if(f==="s"&&isM)continue;
     if(f==="m"&&!isM)continue;
+    if(f==="c")continue;
     if(have.has(x.id))continue;
     if(!b.contains([x.lon,x.lat]))continue;
     const tg={};for(const k in x)if(k!=="id"&&k!=="typ"&&k!=="lat"&&k!=="lon")tg[k]=x[k];
     out.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0});
     if(out.length>=2000)break;
   }
-  for(const docId in commCache){
+  for(const docId in (f==="s"?{}:commCache)){
     const x=commCache[docId],cid="c/"+docId;
     if(have.has(cid)||!b.contains([x.lon,x.lat]))continue;
     if(!votes[docId])votes[docId]=x;
@@ -554,15 +557,27 @@ function initGate(){
   $("#codeIn").addEventListener("keydown",e=>{if(e.key==="Enter")tryCode($("#codeIn").value)});
 $("#photoClose").onclick=()=>$("#photoDlg").close();
 $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#photoDlg").close()});
-  $("#signOut").onclick=()=>{try{localStorage.removeItem("code")}catch(e){}CODE="";items=[];votes={};for(const k in photoCache)delete photoCache[k];render();$("#codeIn").value="";showGate()};
+  $("#signOut").onclick=()=>{
+    if(!confirm(lang==="en"?"Are you sure you want to sign out?":"Bist du sicher, dass du dich abmelden möchtest?"))return;
+    try{localStorage.removeItem("code")}catch(e){}CODE="";items=[];votes={};for(const k in photoCache)delete photoCache[k];render();$("#codeIn").value="";showGate()};
   let saved="";try{saved=localStorage.getItem("code")||""}catch(e){}
   if(saved)tryCode(saved).then(ok=>{if(!ok){try{localStorage.removeItem("code")}catch(e){}}});
   else showGate();
 }
 initGate();
 
-const APP_VERSION="1.5.0";
+const APP_VERSION="1.5.2";
 const PATCH_NOTES=[
+ {v:"1.5.2",d:"02.11.2026",t:{de:"Abmelden",en:"Sign out"},
+  items:{
+   de:["Beim Abmelden fragt die App jetzt nach, ob du sicher bist. So meldest du dich nicht versehentlich ab."],
+   en:["When signing out, the app now asks whether you are sure. This prevents signing out by accident."]}},
+ {v:"1.5.1",d:"02.11.2026",t:{de:"Filter",en:"Filters"},
+  items:{
+   de:["Der Filter „Beides“ heißt jetzt „Alles“.",
+       "Neuer Filter „Nur Community“: zeigt nur die von der Community gemeldeten Automaten."],
+   en:["The filter “Both” is now called “All”.",
+       "New filter “Community only”: shows only the machines reported by the community."]}},
  {v:"1.5.0",d:"01.11.2026",t:{de:"Neue Karte",en:"New map"},
   items:{
    de:["Die Karte ist neu: Sie zeigt jetzt Gebäude mit ihren Grundrissen und wirkt moderner. Ab etwa mittlerer Zoomstufe erkennt man, wo ein Automat an einer Hauswand oder in einem Hof steht.",
