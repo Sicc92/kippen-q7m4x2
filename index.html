@@ -566,8 +566,12 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="1.5.2";
+const APP_VERSION="1.5.3";
 const PATCH_NOTES=[
+ {v:"1.5.3",d:"02.11.2026",t:{de:"Patch Notes schließen",en:"Closing patch notes"},
+  items:{
+   de:["Die Patch Notes lassen sich jetzt auch schließen, indem du außerhalb des Fensters tippst."],
+   en:["The patch notes can now also be closed by tapping outside the window."]}},
  {v:"1.5.2",d:"02.11.2026",t:{de:"Abmelden",en:"Sign out"},
   items:{
    de:["Beim Abmelden fragt die App jetzt nach, ob du sicher bist. So meldest du dich nicht versehentlich ab."],
@@ -648,6 +652,8 @@ function renderPatchNotes(){
 $("#pn").textContent=lang==="en"?"📋 Patch notes":"📋 Patch Notes";
 $("#pn").onclick=()=>{renderPatchNotes();$("#pnDlg").showModal()};
 $("#pnClose").onclick=()=>$("#pnDlg").close();
+/* Klick außerhalb der Patch Notes schließt das Fenster */
+$("#pnDlg").addEventListener("click",e=>{const r=$("#pnDlg").getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$("#pnDlg").close()});
 
 const isStd=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 let dp=null;
