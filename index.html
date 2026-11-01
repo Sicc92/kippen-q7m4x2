@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#1d3557">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nikotin-Navi">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css">
 <style>
 :root{--bg:#eef1f4;--card:#fff;--text:#14202b;--muted:#5b6875;--line:#d5dce3;--accent:#1d3557;--on:#fff;--m:#d6224a;--s:#0e7490}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#17212c;--text:#e8eef4;--muted:#98a6b4;--line:#2a3846;--accent:#7dd3fc;--on:#0b1620;--m:#ff6b8a;--s:#4cc3de}}
@@ -48,7 +48,8 @@ button:disabled{opacity:.55;cursor:default}
 #photoDlg{padding:0;width:auto;max-width:96vw;overflow:hidden}
 #photoDlg img{display:block;max-width:92vw;max-height:78vh}
 #photoDlg .row{padding:10px}
-#map.leaflet-container{touch-action:pan-y!important}
+#map .maplibregl-canvas-container{touch-action:pan-y!important}
+.maplibregl-popup-content{padding:12px 14px;border-radius:12px}
 .twoHint{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-weight:600;text-align:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .25s}
 .twoHint.on{opacity:1}
 #map{height:46vh;min-height:300px;border-radius:14px;border:1px solid var(--line);margin-bottom:10px;z-index:0}
@@ -125,11 +126,11 @@ footer a{color:inherit}
   <div id="dMsg" aria-live="polite"></div>
   <div class="row"><button id="sendBtn" class="primary" data-i18n="send"></button><button id="dClose" data-i18n="cancel"></button></div>
 </dialog>
-<footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · CARTO / Esri · Nominatim</footer>
+<footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · OpenFreeMap · Nominatim</footer>
 
 <dialog id="pnDlg"><h2 id="pnTitle"></h2><div id="pnBody"></div><div class="row"><button id="pnClose" data-i18n="close"></button></div></dialog>
 <dialog id="photoDlg"><img id="photoBig" alt=""><div class="row"><button id="photoClose" data-i18n="close"></button></div></dialog>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 const I={
@@ -142,9 +143,26 @@ const t=k=>I[lang][k]||k;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let st={k:"start",n:0,err:false},pos=null,me=null,items=[],pick=false,rep=null;
 
-const map=L.map("map").setView([51.16,10.45],6);
+/* Karte: MapLibre mit Vektor-Kacheln (OpenFreeMap, OpenStreetMap-Daten). Gebäude werden als Flächen angezeigt. */
+let ready=false,curPop=null,allPts=[];
+const map=new maplibregl.Map({container:"map",style:"https://tiles.openfreemap.org/styles/liberty",center:[10.45,51.16],zoom:6,attributionControl:{compact:true}});
+map.addControl(new maplibregl.NavigationControl({showCompass:false}),"top-right");
+map.on("load",()=>{
+  map.addSource("pts",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+  map.addSource("me",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
+  map.addLayer({id:"pts",type:"circle",source:"pts",paint:{
+    "circle-radius":9,"circle-opacity":.95,
+    "circle-color":["match",["get","k"],"c","#ffd6df","m","#d6224a","#0e7490"],
+    "circle-stroke-color":["match",["get","k"],"c","#d6224a","#fff"],
+    "circle-stroke-width":["match",["get","k"],"c",3,2]}});
+  map.addLayer({id:"me",type:"circle",source:"me",paint:{"circle-radius":8,"circle-color":"#2b8a3e","circle-stroke-color":"#fff","circle-stroke-width":3}});
+  map.on("mouseenter","pts",()=>{if(!pick)map.getCanvas().style.cursor="pointer"});
+  map.on("mouseleave","pts",()=>{map.getCanvas().style.cursor=pick?"crosshair":""});
+  map.on("click","pts",e=>{if(pick)return;const f=e.features&&e.features[0];if(f)openPop(allPts[f.properties.i])});
+  ready=true;setMe();drawMarkers();
+});
 /* Touch-Geräte: Karte nur mit zwei Fingern bedienen, ein Finger scrollt die Seite */
-if(L.Browser.touch&&window.matchMedia("(pointer:coarse)").matches){
+if(("ontouchstart" in window)&&window.matchMedia("(pointer:coarse)").matches){
   const box=map.getContainer(),hint=document.createElement("div");
   hint.className="twoHint";box.appendChild(hint);
   let ht;
@@ -155,10 +173,6 @@ if(L.Browser.touch&&window.matchMedia("(pointer:coarse)").matches){
   box.addEventListener("touchmove",e=>{if(e.touches.length>=2&&e.cancelable)e.preventDefault()},{capture:true,passive:false});
 }
 
-const tl=L.tileLayer("https://{s}.basemaps.cartocdn.com/rasterTiles/voyager/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap contributors © CARTO"}).addTo(map);
-let tlFallback=false;
-tl.on("tileerror",()=>{if(tlFallback)return;tlFallback=true;map.removeLayer(tl);L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri, © OpenStreetMap contributors"}).addTo(map)});
-const layer=L.layerGroup().addTo(map);
 
 function setStatus(k,n=0,err=false){st={k,n,err};const e=$("#status");e.textContent=t(k).replace("{n}",n);e.className=err?"err":""}
 function applyLang(){
@@ -175,8 +189,7 @@ const fmt=d=>d<1000?Math.round(d)+" m":(d/1000).toLocaleString(lang,{maximumFrac
 function setPos(lat,lon,q){
   pos={lat,lon};
   try{localStorage.setItem("lastPos",JSON.stringify({lat,lon,q:q||""}))}catch(e){}
-  if(me)me.remove();
-  me=L.circleMarker([lat,lon],{radius:8,color:"#fff",weight:3,fillColor:"#2b8a3e",fillOpacity:1}).addTo(map);
+  setMe();
   load();
 }
 function restorePos(){
@@ -187,7 +200,14 @@ function restorePos(){
     setPos(s.lat,s.lon,s.q);
   }catch(e){}
 }
-function fit(){const r=+$("#rad").value;map.fitBounds(L.latLng(pos.lat,pos.lon).toBounds(r*2.2))}
+function setMe(){
+  if(!ready||!pos)return;
+  map.getSource("me").setData({type:"FeatureCollection",features:[{type:"Feature",geometry:{type:"Point",coordinates:[pos.lon,pos.lat]},properties:{}}]});
+}
+function fit(){
+  const h=(+$("#rad").value)*2.2/2,dLat=h/111320,dLon=dLat/Math.cos(pos.lat*Math.PI/180);
+  map.fitBounds([[pos.lon-dLon,pos.lat-dLat],[pos.lon+dLon,pos.lat+dLat]],{padding:10,maxZoom:17});
+}
 function geoHint(g){
   const de=lang==="de";
   if(g&&g.code===1)return de?"Standort verweigert. Chrome: Schloss in der Adressleiste → Berechtigungen → Standort → Zulassen. Außerdem Handy-Einstellungen → Standort einschalten."
@@ -398,7 +418,7 @@ function nearestBox(){
   n.innerHTML=`<b>🧭 ${t("nearest")}: ${esc(nn)} · ${fmt(nm.d)}</b><span class="acts"><a href="https://www.google.com/maps/dir/?api=1&destination=${nm.lat},${nm.lon}" target="_blank" rel="noopener">${t("navTo")} Google Maps</a><a href="https://maps.apple.com/?daddr=${nm.lat},${nm.lon}" target="_blank" rel="noopener">${t("navTo")} Apple Maps</a></span>`;
 }
 function render(){
-  layer.clearLayers();const ul=$("#list");ul.innerHTML="";
+  const ul=$("#list");ul.innerHTML="";
   nearestBox();
   if(!pos)return;
   items.forEach((it,i)=>{
@@ -423,14 +443,14 @@ function viewPts(){
     if(f==="s"&&isM)continue;
     if(f==="m"&&!isM)continue;
     if(have.has(x.id))continue;
-    if(!b.contains([x.lat,x.lon]))continue;
+    if(!b.contains([x.lon,x.lat]))continue;
     const tg={};for(const k in x)if(k!=="id"&&k!=="typ"&&k!=="lat"&&k!=="lon")tg[k]=x[k];
     out.push({id:x.id,lat:x.lat,lon:x.lon,tg,m:isM,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0});
     if(out.length>=2000)break;
   }
   for(const docId in commCache){
     const x=commCache[docId],cid="c/"+docId;
-    if(have.has(cid)||!b.contains([x.lat,x.lon]))continue;
+    if(have.has(cid)||!b.contains([x.lon,x.lat]))continue;
     if(!votes[docId])votes[docId]=x;
     out.push({id:cid,docId,c:true,lat:x.lat,lon:x.lon,tg:{},note:x.note||"",m:true,d:pos?dist(pos.lat,pos.lon,x.lat,x.lon):0,data:x});
   }
@@ -441,25 +461,28 @@ let commCache={},commBox=null;
 async function fetchCommBox(){
   if(!db||!CODE||!pos)return;
   const b=map.getBounds();
-  if(commBox&&commBox.contains(b))return;
+  if(commBox&&b.getSouth()>=commBox.s&&b.getNorth()<=commBox.n&&b.getWest()>=commBox.w&&b.getEast()<=commBox.e)return;
   try{
     const s=await col("community").where("lat",">=",b.getSouth()).where("lat","<=",b.getNorth()).get();
     s.forEach(d=>{const x=d.data();if(typeof x.lat==="number"&&typeof x.lon==="number")commCache[d.id]=x});
-    commBox=L.latLngBounds(b.getSouthWest(),b.getNorthEast());
+    commBox={s:b.getSouth(),n:b.getNorth(),w:b.getWest(),e:b.getEast()};
   }catch(e){}
 }
 function drawMarkers(){
-  layer.clearLayers();
-  [...items,...viewPts()].forEach(it=>{
-    const name=nameOf(it);
-    it.marker=L.circleMarker([it.lat,it.lon],{radius:9,color:it.c?"#d6224a":"#fff",weight:it.c?3:2,fillColor:it.c?"#ffd6df":(it.m?"#d6224a":"#0e7490"),fillOpacity:.95}).addTo(layer).bindPopup(()=>popupNode(it,name),{maxWidth:260,minWidth:200});
-  });
+  if(!ready)return;
+  allPts=[...items,...viewPts()];
+  map.getSource("pts").setData({type:"FeatureCollection",features:allPts.map((it,i)=>({type:"Feature",geometry:{type:"Point",coordinates:[it.lon,it.lat]},properties:{i,k:it.c?"c":(it.m?"m":"s")}}))});
+}
+function openPop(it){
+  if(!it)return;
+  if(curPop)curPop.remove();
+  curPop=new maplibregl.Popup({maxWidth:"260px",offset:10}).setLngLat([it.lon,it.lat]).setDOMContent(popupNode(it,nameOf(it))).addTo(map);
 }
 $("#list").addEventListener("click",e=>{
   const vb=e.target.closest("[data-v]");
   if(vb)return vote(items[+vb.dataset.vi],vb.dataset.v);
   const n=e.target.closest("[data-i]");
-  if(n){const it=items[+n.dataset.i];map.setView([it.lat,it.lon],18);it.marker.openPopup();$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
+  if(n){const it=items[+n.dataset.i];map.flyTo({center:[it.lon,it.lat],zoom:18});map.once("moveend",()=>openPop(it));$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
 });
 
 /* Neuen Automaten melden (wird in Firebase gespeichert) */
@@ -490,7 +513,7 @@ function endPick(){pick=false;$("#banner").hidden=true;map.getContainer().style.
 $("#new").onclick=()=>{pick=true;$("#banner").hidden=false;$("#here").hidden=!pos;map.getContainer().style.cursor="crosshair";$("#map").scrollIntoView({behavior:"smooth",block:"center"})};
 $("#pickCancel").onclick=endPick;
 $("#here").onclick=()=>{endPick();openReport({lat:pos.lat,lon:pos.lon})};
-map.on("click",e=>{if(!pick)return;endPick();openReport({lat:e.latlng.lat,lon:e.latlng.lng})});
+map.on("click",e=>{if(!pick)return;endPick();openReport({lat:e.lngLat.lat,lon:e.lngLat.lng})});
 $("#sendBtn").onclick=send;
 $("#dClose").onclick=()=>$("#dlg").close();
 
@@ -500,7 +523,7 @@ $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 $("#rad").onchange=load;
 document.querySelectorAll("input[name=f]").forEach(r=>r.onchange=load);
 document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem("lang",lang)}catch(e){}applyLang()});
-map.on("moveend",async()=>{if(!pos)return;await fetchCommBox();if(!map.getContainer().querySelector(".leaflet-popup"))drawMarkers()});
+map.on("moveend",async()=>{if(!pos)return;await fetchCommBox();if(!curPop||!curPop.isOpen())drawMarkers()});
 applyLang();
 
 /* Zugangscode: Die App wird erst nach Eingabe des Codes sichtbar.
@@ -522,7 +545,7 @@ async function tryCode(c){
     return false;
   }
   try{localStorage.setItem("code",c)}catch(e){}
-  $("#gate").hidden=true;$("#app").hidden=false;$("#signOut").hidden=false;map.invalidateSize();restorePos();
+  $("#gate").hidden=true;$("#app").hidden=false;$("#signOut").hidden=false;map.resize();restorePos();
   return true;
 }
 function initGate(){
@@ -538,8 +561,18 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="1.4.0";
+const APP_VERSION="1.5.0";
 const PATCH_NOTES=[
+ {v:"1.5.0",d:"01.11.2026",t:{de:"Neue Karte",en:"New map"},
+  items:{
+   de:["Die Karte ist neu: Sie zeigt jetzt Gebäude mit ihren Grundrissen und wirkt moderner. Ab etwa mittlerer Zoomstufe erkennt man, wo ein Automat an einer Hauswand oder in einem Hof steht.",
+       "Automaten, Geschäfte und Community-Meldungen erscheinen wie bisher als Punkte. Antippen öffnet das Fenster mit Details, Bewertungen und Routenlinks.",
+       "Die Karte ist derzeit nur hell. Einen Dunkelmodus für die Karte prüfen wir später.",
+       "Die neue Karte wurde auf dem Handy getestet. Fehler bitte trotzdem melden, damit wir sie beheben können."],
+   en:["The map is new: it now shows buildings with their footprints and looks more modern. From about medium zoom levels you can see where a machine stands on a wall or in a yard.",
+       "Machines, shops and community reports appear as dots as before. Tapping one opens the details, ratings and route links.",
+       "The map is currently light only. We will check a dark mode for the map later.",
+       "The new map has been tested on a phone. Please still report any bugs so we can fix them."]}},
  {v:"1.4.0",d:"01.11.2026",t:{de:"Alle Bundesländer",en:"All states"},
   items:{
    de:["Die restlichen 12 Bundesländer sind jetzt dabei: Berlin, Brandenburg, Bremen, Hamburg, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Saarland, Sachsen, Sachsen-Anhalt, Schleswig-Holstein und Thüringen. 21.666 Einträge (11.288 Automaten, 10.378 Geschäfte) kommen dazu.",
