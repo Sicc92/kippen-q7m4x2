@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#1d3557">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nikotin-Navi">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css">
 <style>
 :root{--bg:#eef1f4;--card:#fff;--text:#14202b;--muted:#5b6875;--line:#d5dce3;--accent:#1d3557;--on:#fff;--m:#d6224a;--s:#0e7490}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#17212c;--text:#e8eef4;--muted:#98a6b4;--line:#2a3846;--accent:#7dd3fc;--on:#0b1620;--m:#ff6b8a;--s:#4cc3de}}
@@ -49,7 +49,6 @@ button:disabled{opacity:.55;cursor:default}
 #photoDlg img{display:block;max-width:92vw;max-height:78vh}
 #photoDlg .row{padding:10px}
 #map .maplibregl-canvas-container{touch-action:pan-y!important}
-body.oh #map .maplibregl-canvas-container{touch-action:none!important}
 .maplibregl-popup-content{padding:12px 14px;border-radius:12px}
 .twoHint{position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;font-weight:600;text-align:center;padding:16px;pointer-events:none;opacity:0;transition:opacity .25s}
 .twoHint.on{opacity:1}
@@ -79,20 +78,6 @@ dialog label{display:block;margin:10px 0 4px;font-weight:600;font-size:.92rem}
 dialog textarea,dialog select{width:100%}
 .hint{color:var(--muted);font-size:.85rem;margin:10px 0}
 #dMsg{margin:10px 0;font-weight:600}
-/* Einhand-Modus: wichtige Knöpfe unten in Daumenreichweite */
-#ohBtn[aria-pressed=true]{background:var(--accent);color:var(--on);border-color:var(--accent)}
-#ohBar{display:none}
-body.oh #ohBar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:50;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.12)}
-body.oh #ohBar button{padding:10px 4px;font-size:.78rem;line-height:1.2;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px}
-body.oh #ohBar button b{font-size:1.3rem;line-height:1}
-#app[hidden]~#ohBar{display:none!important}
-body.oh main,body.oh footer{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-body.oh #banner{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:51;margin:0;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-body.oh #banner button{padding:12px 16px}
-body.oh dialog{margin:auto auto calc(12px + env(safe-area-inset-bottom))}
-body.oh dialog .row button{flex:1;padding:14px}
-body.oh #pnDlg .row{position:sticky;bottom:-18px;background:var(--card);padding:8px 0}
-body.oh .acts a,body.oh .acts button,body.oh .vote button{padding:9px 13px}
 footer{max-width:820px;margin:0 auto;padding:0 14px 28px;color:var(--muted);font-size:.82rem}
 footer a{color:inherit}
 </style>
@@ -100,7 +85,7 @@ footer a{color:inherit}
 <body>
 <header>
   <h1 data-i18n="title"></h1>
-  <div style="display:flex;gap:8px;align-items:center"><button id="ohBtn" aria-pressed="false">✋ <span data-i18n="ohBtn"></span></button><button id="pn">📋 Patch Notes</button><button id="inst" hidden>📲 App installieren</button><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
+  <div style="display:flex;gap:8px;align-items:center"><button id="pn">📋 Patch Notes</button><button id="inst" hidden>📲 App installieren</button><button id="signOut" hidden data-i18n="signOut"></button><div class="lang"><button data-l="de" aria-label="Deutsch">DE</button><button data-l="en" aria-label="English">EN</button></div></div>
 </header>
 <div id="instHint" role="status" hidden style="max-width:820px;margin:0 auto;padding:0 14px 8px;color:var(--muted);font-size:.9rem"></div>
 <section id="gate" class="panel" style="width:calc(100% - 28px);max-width:420px;margin:30px auto;padding:20px" hidden>
@@ -127,7 +112,7 @@ footer a{color:inherit}
     </div>
   </section>
   <div id="status" role="status"></div>
-  <div id="banner" hidden><span id="pickTxt" data-i18n="pick"></span><button id="here" data-i18n="here"></button><button id="pickCancel" data-i18n="cancel"></button></div>
+  <div id="banner" hidden><span data-i18n="pick"></span><button id="here" data-i18n="here"></button><button id="pickCancel" data-i18n="cancel"></button></div>
   <div id="map"></div>
   <div class="legend"><span><i class="dot" style="background:var(--m)"></i><span data-i18n="lm"></span></span><span><i class="dot" style="background:var(--s)"></i><span data-i18n="ls"></span></span><span><i class="dot" style="background:#ffd6df;border:2px solid var(--m);box-sizing:border-box"></i><span data-i18n="lc"></span></span></div>
   <button id="new" class="primary" data-i18n="newBtn"></button>
@@ -138,28 +123,20 @@ footer a{color:inherit}
   <h2 id="dTitle"></h2>
   <label for="cm" id="cmLabel" data-i18n="comment"></label>
   <textarea id="cm" rows="3"></textarea>
-  <p id="dWhere" class="hint"></p>
   <p class="hint" data-i18n="privacy"></p>
   <div id="dMsg" aria-live="polite"></div>
   <div class="row"><button id="sendBtn" class="primary" data-i18n="send"></button><button id="dClose" data-i18n="cancel"></button></div>
 </dialog>
-<nav id="ohBar" aria-label="Einhand">
-  <button id="ohLoc" class="primary"><b>📍</b><span data-i18n="ohLoc"></span></button>
-  <button id="ohSearch"><b>🔍</b><span data-i18n="ohSearch"></span></button>
-  <button id="ohNew" class="primary"><b>＋</b><span data-i18n="ohNew"></span></button>
-  <button id="ohIn"><b>⊕</b><span data-i18n="ohIn"></span></button>
-  <button id="ohOut"><b>⊖</b><span data-i18n="ohOut"></span></button>
-</nav>
 <footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · OpenFreeMap · Nominatim</footer>
 
 <dialog id="pnDlg"><h2 id="pnTitle"></h2><div id="pnBody"></div><div class="row"><button id="pnClose" data-i18n="close"></button></div></dialog>
 <dialog id="photoDlg"><img id="photoBig" alt=""><div class="row"><button id="photoClose" data-i18n="close"></button></div></dialog>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/13.2.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore-compat.js"></script><script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script>
 const I={
-de:{title:"Nikotin-Navi",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Alles",fM:"Nur Automaten",fS:"Nur Geschäfte",fC:"Nur Community",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",done:"Fertig",ohBtn:"Einhand",ohLoc:"Standort",ohSearch:"Suchen",ohNew:"Melden",ohIn:"Näher",ohOut:"Weiter",ohOn:"Einhand-Modus an: Die wichtigsten Knöpfe sind jetzt unten. Die Karte lässt sich mit einem Finger bewegen.",ohOff:"Einhand-Modus aus.",gpsWait:"Genauer Standort wird ermittelt …",gpsFail:"Standort nicht verfügbar. Tippe stattdessen auf die Karte, wo der Automat steht.",whereLbl:"Stelle der Meldung",whereGps:"aktueller GPS-Standort",whereMap:"auf der Karte gewählt",acc:"Genauigkeit",accWarn:"Ungenau! Prüfe auf der Karte, ob der Punkt stimmt, oder tippe die Stelle auf der Karte an.",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 20 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
-en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"All",fM:"Machines only",fS:"Stores only",fC:"Community only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",done:"Done",ohBtn:"One-hand",ohLoc:"Location",ohSearch:"Search",ohNew:"Report",ohIn:"Zoom in",ohOut:"Zoom out",ohOn:"One-hand mode on: the main buttons are now at the bottom. The map can be moved with one finger.",ohOff:"One-hand mode off.",gpsWait:"Getting your exact location …",gpsFail:"Location not available. Tap the map where the machine is instead.",whereLbl:"Report position",whereGps:"current GPS location",whereMap:"chosen on the map",acc:"accuracy",accWarn:"Inaccurate! Check on the map whether the point is right, or tap the spot on the map.",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",takePhoto:"Why not take a photo right now!",hasPhoto:"This machine already has a photo.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 20 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
+de:{title:"Nikotin-Navi",search:"Ort oder Adresse",searchBtn:"Suchen",mypos:"Mein Standort",radius:"Umkreis",fAll:"Alles",fM:"Nur Automaten",fS:"Nur Geschäfte",fC:"Nur Community",lm:"Automat",ls:"Geschäft",sTob:"Tabakladen",sKiosk:"Kiosk",newBtn:"+ Neuen Automaten melden",pick:"Tippe auf die Karte, wo der Automat steht.",here:"Mein Standort",cancel:"Abbrechen",done:"Fertig",start:"Tippe auf „Mein Standort“ oder gib einen Ort ein.",loading:"Suche läuft …",none:"Nichts gefunden. Erhöhe den Umkreis oder ändere den Filter.",found:"{n} Treffer, nach Entfernung sortiert",errNet:"Abfrage fehlgeschlagen. Bitte später erneut versuchen.",showPhotos:"📷 Fotos anzeigen",photos:"Foto",addPhoto:"📷 Foto hinzufügen",noPhotos:"Noch keine Fotos.",photoLoading:"Fotos werden geladen …",photoSending:"Foto wird hochgeladen …",photoThanks:"Danke! Das Foto wurde hinzugefügt.",photoErr:"Foto konnte nicht geladen oder hochgeladen werden.",photoLimit:"Du hast heute schon 3 Fotos hochgeladen.",photoBad:"Bitte wähle ein Bild aus.",photoRule:"Bitte keine Personen oder Kennzeichen fotografieren.",takePhoto:"Mach doch direkt ein Foto!",hasPhoto:"Für diesen Automaten gibt es schon ein Foto.",close:"Schließen",errGeo:"Standort nicht verfügbar. Gib stattdessen einen Ort ein.",errPlace:"Ort nicht gefunden.",report:"Melden: defekt / existiert nicht",rTitleNew:"Neuen Automaten melden",rTitleOld:"Problem melden",reason:"Was ist das Problem?",rBroken:"Funktioniert nicht",rGone:"Gibt es nicht mehr",rOther:"Anderes Problem",comment:"Kommentar (optional)",commentNew:"Beschreibung, z. B. genauer Ort oder Betreiber (optional)",send:"Meldung senden",sending:"Wird gesendet …",sent:"Danke! Der Automat wurde gemeldet und erscheint jetzt in der App.",sendErr:"Senden fehlgeschlagen.",limit:"Du hast heute schon 3 Automaten gemeldet.",lc:"Automat (Community)",privacy:"Meldungen sind anonym, aber für alle Nutzer der App sichtbar. Bitte melde nur echte Automaten.",unnamed:"Unbenannt",attr:"Daten:",hours:"Öffnungszeiten",nearest:"Nächster Automat",navTo:"Route mit",voteOk:"👍 In Ordnung",voteBad:"👎 Defekt / weg",votedThanks:"Danke für deine Bewertung!",votedAlready:"Du hast diesen Automaten heute schon bewertet.",voteErr:"Bewertung fehlgeschlagen.",last:"Zuletzt bewertet",noVotes:"Noch keine Bewertungen",partial:"{n} Treffer bisher, suche weiter …",bigHint:"Große Umkreise können länger dauern.",gateText:"Diese App ist nur für Eingeladene. Bitte gib den Zugangscode ein.",codePh:"Zugangscode",signIn:"Weiter",signOut:"Abmelden",denied:"Der Code ist nicht gültig.",authErr:"Prüfung fehlgeschlagen."},
+en:{title:"Cigarette Vending Machine Finder",search:"Place or address",searchBtn:"Search",mypos:"My location",radius:"Radius",fAll:"All",fM:"Machines only",fS:"Stores only",fC:"Community only",lm:"Machine",ls:"Store",sTob:"Tobacco shop",sKiosk:"Kiosk",newBtn:"+ Report a new machine",pick:"Tap the map where the machine is.",here:"My location",cancel:"Cancel",done:"Done",start:"Tap “My location” or enter a place.",loading:"Searching …",none:"Nothing found. Increase the radius or change the filter.",found:"{n} results, sorted by distance",errNet:"Request failed. Please try again later.",showPhotos:"📷 Show photos",photos:"Photo",addPhoto:"📷 Add photo",noPhotos:"No photos yet.",photoLoading:"Loading photos …",photoSending:"Uploading photo …",photoThanks:"Thanks! The photo was added.",photoErr:"Photo could not be loaded or uploaded.",photoLimit:"You already uploaded 3 photos today.",photoBad:"Please choose an image.",photoRule:"Please do not photograph people or license plates.",takePhoto:"Why not take a photo right now!",hasPhoto:"This machine already has a photo.",close:"Close",errGeo:"Location unavailable. Enter a place instead.",errPlace:"Place not found.",report:"Report: broken / gone",rTitleNew:"Report a new machine",rTitleOld:"Report a problem",reason:"What is the problem?",rBroken:"Does not work",rGone:"No longer exists",rOther:"Other problem",comment:"Comment (optional)",commentNew:"Description, e.g. exact spot or operator (optional)",send:"Send report",sending:"Sending …",sent:"Thanks! The machine was reported and now shows up in the app.",sendErr:"Sending failed.",limit:"You already reported 3 machines today.",lc:"Machine (community)",privacy:"Reports are anonymous but visible to all users of the app. Please only report real machines.",unnamed:"Unnamed",attr:"Data:",hours:"Opening hours",nearest:"Nearest machine",navTo:"Route with",voteOk:"👍 Works",voteBad:"👎 Broken / gone",votedThanks:"Thanks for your rating!",votedAlready:"You already rated this machine today.",voteErr:"Rating failed.",last:"Last rated",noVotes:"No ratings yet",partial:"{n} results so far, still searching …",bigHint:"Large radii can take longer.",gateText:"This app is invite-only. Please enter the access code.",codePh:"Access code",signIn:"Continue",signOut:"Sign out",denied:"The code is not valid.",authErr:"Check failed."}
 };
 const $=s=>document.querySelector(s);
 let lang=(()=>{try{const s=localStorage.getItem("lang");if(s)return s}catch(e){}return (navigator.language||"de").startsWith("de")?"de":"en"})();
@@ -180,8 +157,6 @@ map.on("load",()=>{
     "circle-stroke-color":["match",["get","k"],"c","#d6224a","#fff"],
     "circle-stroke-width":["match",["get","k"],"c",3,2]}});
   map.addLayer({id:"me",type:"circle",source:"me",paint:{"circle-radius":8,"circle-color":"#2b8a3e","circle-stroke-color":"#fff","circle-stroke-width":3}});
-  map.addSource("rep",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
-  map.addLayer({id:"rep",type:"circle",source:"rep",paint:{"circle-radius":11,"circle-color":"#f59f00","circle-stroke-color":"#fff","circle-stroke-width":3}});
   map.on("mouseenter","pts",()=>{if(!pick)map.getCanvas().style.cursor="pointer"});
   map.on("mouseleave","pts",()=>{map.getCanvas().style.cursor=pick?"crosshair":""});
   map.on("click","pts",e=>{if(pick)return;const f=e.features&&e.features[0];if(f)openPop(allPts[f.properties.i])});
@@ -194,10 +169,9 @@ if(("ontouchstart" in window)&&window.matchMedia("(pointer:coarse)").matches){
   let ht;
   const showHint=()=>{hint.textContent=lang==="de"?"Mit zwei Fingern bewegen":"Use two fingers to move the map";hint.classList.add("on");clearTimeout(ht);ht=setTimeout(()=>hint.classList.remove("on"),1200)};
   box.addEventListener("touchstart",e=>{
-    if(document.body.classList.contains("oh"))return;
     if(e.touches.length<2){e.stopPropagation();showHint()}else{hint.classList.remove("on")}
   },{capture:true,passive:true});
-  box.addEventListener("touchmove",e=>{if((e.touches.length>=2||document.body.classList.contains("oh"))&&e.cancelable)e.preventDefault()},{capture:true,passive:false});
+  box.addEventListener("touchmove",e=>{if(e.touches.length>=2&&e.cancelable)e.preventDefault()},{capture:true,passive:false});
 }
 
 
@@ -520,30 +494,13 @@ function openReport(o){
   $("#dTitle").textContent=t("rTitleNew");
   $("#cmLabel").hidden=false;$("#cm").value="";$("#cm").placeholder=t("commentNew");
   $("#dMsg").textContent="";$("#sendBtn").disabled=false;$("#sendBtn").hidden=false;$("#dClose").textContent=t("cancel");$("#dClose").classList.remove("primary");
-  setRepMark(o);
-  const w=$("#dWhere");
-  w.textContent=t("whereLbl")+": "+(o.gps?t("whereGps")+" ("+t("acc")+" ± "+Math.round(o.acc)+" m)":t("whereMap"))+" …";
-  if(o.gps&&o.acc>50)w.textContent+=" "+t("accWarn");
-  const base=w.textContent,mine=o;
-  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&lat=${o.lat}&lon=${o.lon}`).then(r=>r.json()).then(j=>{
-    if(rep!==mine||!j||!j.address)return;const a=j.address;
-    const street=[a.road||a.pedestrian||a.footway||"",a.house_number||""].join(" ").trim();
-    const town=a.village||a.suburb||a.town||a.city||"";
-    w.textContent=base.replace(" …",": "+[street,town].filter(Boolean).join(", "));
-  }).catch(()=>{});
   $("#dlg").showModal();
 }
-function setRepMark(o){
-  if(!ready)return;
-  map.getSource("rep").setData({type:"FeatureCollection",features:o?[{type:"Feature",geometry:{type:"Point",coordinates:[o.lon,o.lat]},properties:{}}]:[]});
-  if(o)map.jumpTo({center:[o.lon,o.lat],zoom:Math.max(map.getZoom(),17)});
-}
-$("#dlg").addEventListener("close",()=>setRepMark(null));
 async function send(){
   const o=rep,c=$("#cm").value.trim().slice(0,200);
   if(!db){$("#dMsg").textContent=t("sendErr");return}
   const key="reports:"+new Date().toISOString().slice(0,10);
-  try{if((+localStorage.getItem(key)||0)>=20){$("#dMsg").textContent=t("limit");return}}catch(e){}
+  try{if((+localStorage.getItem(key)||0)>=3){$("#dMsg").textContent=t("limit");return}}catch(e){}
   $("#sendBtn").disabled=true;$("#dMsg").textContent=t("sending");
   try{
     await col("community").add({lat:+o.lat.toFixed(6),lon:+o.lon.toFixed(6),note:c,ok:0,bad:0,created:firebase.firestore.FieldValue.serverTimestamp()});
@@ -555,38 +512,15 @@ async function send(){
     $("#sendBtn").disabled=false;
   }
 }
-function endPick(){pick=false;$("#banner").hidden=true;map.getContainer().style.cursor="";$("#pickTxt").textContent=t("pick");$("#here").disabled=false}
-$("#new").onclick=()=>{pick=true;$("#banner").hidden=false;$("#here").hidden=!navigator.geolocation;map.getContainer().style.cursor="crosshair";$("#map").scrollIntoView({behavior:"smooth",block:"center"})};
+function endPick(){pick=false;$("#banner").hidden=true;map.getContainer().style.cursor=""}
+$("#new").onclick=()=>{pick=true;$("#banner").hidden=false;$("#here").hidden=!pos;map.getContainer().style.cursor="crosshair";$("#map").scrollIntoView({behavior:"smooth",block:"center"})};
 $("#pickCancel").onclick=endPick;
-$("#here").onclick=()=>{
-  /* immer frischen, genauen GPS-Standort holen (nicht die letzte Suche oder einen alten Standort) */
-  $("#here").disabled=true;$("#pickTxt").textContent=t("gpsWait");
-  navigator.geolocation.getCurrentPosition(p=>{
-    if(!pick)return;endPick();
-    openReport({lat:p.coords.latitude,lon:p.coords.longitude,gps:true,acc:p.coords.accuracy||0});
-  },()=>{
-    if(!pick)return;$("#here").disabled=false;$("#pickTxt").textContent=t("gpsFail");
-  },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
-};
+$("#here").onclick=()=>{endPick();openReport({lat:pos.lat,lon:pos.lon})};
 map.on("click",e=>{if(!pick)return;endPick();openReport({lat:e.lngLat.lat,lon:e.lngLat.lng})});
 $("#sendBtn").onclick=send;
 $("#dClose").onclick=()=>$("#dlg").close();
 
 $("#loc").onclick=locate;
-/* Einhand-Modus (freiwillig, wird auf dem Gerät gemerkt) */
-function setOneHand(on,say){
-  document.body.classList.toggle("oh",on);$("#ohBtn").setAttribute("aria-pressed",on);
-  try{localStorage.setItem("onehand",on?"1":"0")}catch(e){}
-  if(say){$("#status").className="";$("#status").textContent=t(on?"ohOn":"ohOff")}
-  setTimeout(()=>map.resize(),50);
-}
-$("#ohBtn").onclick=()=>setOneHand(!document.body.classList.contains("oh"),true);
-$("#ohLoc").onclick=()=>{locate();$("#map").scrollIntoView({behavior:"smooth",block:"center"})};
-$("#ohSearch").onclick=()=>{window.scrollTo({top:0,behavior:"smooth"});$("#q").focus()};
-$("#ohNew").onclick=()=>$("#new").click();
-$("#ohIn").onclick=()=>map.zoomIn();
-$("#ohOut").onclick=()=>map.zoomOut();
-try{if(localStorage.getItem("onehand")==="1")setOneHand(true,false)}catch(e){}
 $("#go").onclick=search;
 $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 $("#rad").onchange=load;
@@ -632,20 +566,12 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="1.5.6";
+const APP_VERSION="1.5.4";
 const PATCH_NOTES=[
- {v:"1.5.6",d:"02.11.2026",t:{de:"Einhand-Modus",en:"One-hand mode"},
+ {v:"1.5.4",d:"02.11.2026",t:{de:"Meldung abschließen",en:"Finishing a report"},
   items:{
-   de:["Neuer Knopf „✋ Einhand“ oben. Wer möchte, kann damit den Einhand-Modus einschalten. Er bleibt auf dem Gerät gespeichert, bis du ihn wieder ausschaltest.","Im Einhand-Modus liegen die wichtigsten Knöpfe unten in Daumenreichweite: Standort, Suchen, Melden, näher und weiter zoomen.","Die Karte lässt sich dann mit einem Finger bewegen, und Fenster wie „Automat melden“ erscheinen unten am Bildschirm."],
-   en:["New “✋ One-hand” button at the top. Anyone who wants can turn on one-hand mode with it. It stays saved on the device until you turn it off again.","In one-hand mode the main buttons sit at the bottom within thumb reach: location, search, report, zoom in and zoom out.","The map can then be moved with one finger, and windows such as “Report a machine” appear at the bottom of the screen."]}},
- {v:"1.5.5",d:"02.11.2026",t:{de:"Technik aktualisiert",en:"Technology updated"},
-  items:{
-   de:["Datenbank-Anbindung und Karte auf neue Versionen aktualisiert. Das soll Warnungen mancher Virenscanner auf Android wegen veralteter Versionen beheben.","Für dich ändert sich sonst nichts. Falls etwas nicht wie gewohnt funktioniert, melde es bitte."],
-   en:["Database connection and map updated to new versions. This should fix warnings from some Android virus scanners about outdated versions.","Nothing else changes for you. If something doesn't work as usual, please report it."]}},
- {v:"1.5.4",d:"02.11.2026",t:{de:"Automaten melden",en:"Reporting machines"},
-  items:{
-   de:["Nach dem Absenden einer Meldung heißt der Knopf unten jetzt „Fertig“ statt „Abbrechen“.","Du kannst jetzt bis zu 20 statt 3 Automaten pro Tag melden.","Fehler behoben: „Mein Standort“ beim Melden hat manchmal eine alte Position oder den Ort der letzten Suche genommen. Jetzt wird immer frisch der genaue GPS-Standort geholt.","Vor dem Absenden siehst du, wo die Meldung landet: orangener Punkt auf der Karte, Straße und Ort im Fenster und bei GPS die Genauigkeit."],
-   en:["After sending a report, the button at the bottom now says “Done” instead of “Cancel”.","You can now report up to 20 machines per day instead of 3.","Bug fixed: “My location” when reporting sometimes used an old position or the place of the last search. Now it always gets your exact GPS location fresh.","Before sending you can see where the report will be placed: orange dot on the map, street and place in the window and, for GPS, the accuracy."]}},
+   de:["Nach dem Absenden einer Meldung heißt der Knopf unten jetzt „Fertig“ statt „Abbrechen“."],
+   en:["After sending a report, the button at the bottom now says “Done” instead of “Cancel”."]}},
  {v:"1.5.3",d:"02.11.2026",t:{de:"Patch Notes schließen",en:"Closing patch notes"},
   items:{
    de:["Die Patch Notes lassen sich jetzt auch schließen, indem du außerhalb des Fensters tippst."],
