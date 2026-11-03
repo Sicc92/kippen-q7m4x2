@@ -613,7 +613,7 @@ $("#list").addEventListener("click",e=>{
   const vb=e.target.closest("[data-v]");
   if(vb)return vote(items[+vb.dataset.vi],vb.dataset.v);
   const n=e.target.closest("[data-i]");
-  if(n){const it=items[+n.dataset.i];map.flyTo({center:[it.lon,it.lat],zoom:18,offset:popOffset()});openPop(it);$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
+  if(n){const it=items[+n.dataset.i];map.easeTo({center:[it.lon,it.lat],zoom:18,offset:popOffset(),duration:700});openPop(it);$("#map").scrollIntoView({behavior:"smooth",block:"center"})}
 });
 
 /* Neuen Automaten melden (wird in Firebase gespeichert) */
@@ -880,8 +880,12 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="2.2.1";
+const APP_VERSION="2.2.2";
 const PATCH_NOTES=[
+ {v:"2.2.2",d:"03.11.2026",t:{de:"Popups aus der Liste",en:"Popups from the list"},
+  items:{
+   de:["Auch beim Antippen eines Eintrags in der Liste passt das Popup jetzt vollständig in die Karte."],
+   en:["When you tap an entry in the list, the popup now also fits completely inside the map."]}},
  {v:"2.2.1",d:"03.11.2026",t:{de:"Popups verbessert",en:"Popups improved"},
   items:{
    de:["Beim Antippen eines Automaten rückt die Karte ihn nach unten, damit das Popup darüber vollständig Platz hat und das Foto zu sehen ist.","Wischen im Popup scrollt jetzt nur das Popup und verschiebt nicht mehr die Karte."],
