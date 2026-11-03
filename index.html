@@ -99,7 +99,7 @@ body.oh .acts a,body.oh .acts button,body.oh .vote button{padding:9px 13px}
 body.oh #ohBar{grid-template-columns:repeat(6,1fr)}
 #fbWarn{margin:10px 0 0;padding:10px 12px;border-radius:12px;border:1px solid #f59f00;background:rgba(245,159,0,.12);font-weight:600;font-size:.92rem}
 /* 2.2.0: moderne Popups auf der Karte */
-.maplibregl-popup-content{padding:0;max-height:max(250px,calc(46vh - 40px));overflow:auto;overscroll-behavior:contain;border-radius:18px;background:var(--card);color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.22);overflow:hidden}
+.maplibregl-popup-content{padding:0;max-height:max(250px,calc(46vh - 40px));overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;border-radius:18px;background:var(--card);color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.22)}
 .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip{border-top-color:var(--card)}
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,.maplibregl-popup-anchor-top-right .maplibregl-popup-tip{border-bottom-color:var(--card)}
 .maplibregl-popup-anchor-left .maplibregl-popup-tip{border-right-color:var(--card)}.maplibregl-popup-anchor-right .maplibregl-popup-tip{border-left-color:var(--card)}
@@ -880,8 +880,12 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="2.2.2";
+const APP_VERSION="2.2.3";
 const PATCH_NOTES=[
+ {v:"2.2.3",d:"03.11.2026",t:{de:"Scrollen im Popup",en:"Scrolling in popups"},
+  items:{
+   de:["Im Popup kann man jetzt wieder nach unten scrollen, auch wenn ein Foto vorhanden ist."],
+   en:["You can now scroll down inside a popup again, even when it has a photo."]}},
  {v:"2.2.2",d:"03.11.2026",t:{de:"Popups aus der Liste",en:"Popups from the list"},
   items:{
    de:["Auch beim Antippen eines Eintrags in der Liste passt das Popup jetzt vollständig in die Karte."],
