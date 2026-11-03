@@ -170,7 +170,7 @@ footer a{color:inherit}
 </nav>
 <footer><span data-i18n="attr"></span> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · OpenFreeMap · Nominatim</footer>
 
-<dialog id="pnDlg"><h2 id="pnTitle"></h2><div id="pnBody"></div><div class="row"><button id="pnClose" data-i18n="close"></button></div></dialog>
+<dialog id="pnDlg"><h2 id="pnTitle" tabindex="-1" autofocus style="outline:none"></h2><div id="pnBody"></div><div class="row"><button id="pnClose" data-i18n="close"></button></div></dialog>
 <dialog id="lbDlg"><h2 data-i18n="lbTitle"></h2>
   <p class="hint" data-i18n="lbInfo"></p>
   <label for="nick" data-i18n="nickLbl"></label>
@@ -778,8 +778,12 @@ $("#photoDlg").addEventListener("click",e=>{if(e.target===$("#photoDlg"))$("#pho
 }
 initGate();
 
-const APP_VERSION="2.0.1";
+const APP_VERSION="2.0.2";
 const PATCH_NOTES=[
+ {v:"2.0.2",d:"03.11.2026",t:{de:"Patch Notes",en:"Patch notes"},
+  items:{
+   de:["Die Patch Notes öffnen sich jetzt oben beim neuesten Update. Ältere Updates findest du weiter unten."],
+   en:["The patch notes now open at the top with the newest update. Older updates are further down."]}},
  {v:"2.0.1",d:"03.11.2026",t:{de:"Zuverlässiger Start",en:"More reliable start"},
   items:{
    de:["Wenn die Community-Funktionen gerade nicht erreichbar sind (zum Beispiel Funkloch oder Tageslimit der Datenbank erreicht), kommst du trotzdem in die App. Karte und Suche funktionieren dann normal, oben erscheint ein Hinweis, und die App versucht es automatisch wieder.",
@@ -896,7 +900,7 @@ function renderPatchNotes(){
   }
 }
 $("#pn").textContent=lang==="en"?"📋 Patch notes":"📋 Patch Notes";
-$("#pn").onclick=()=>{renderPatchNotes();$("#pnDlg").showModal()};
+$("#pn").onclick=()=>{renderPatchNotes();$("#pnDlg").showModal();$("#pnTitle").focus({preventScroll:true});$("#pnDlg").scrollTop=0};
 $("#pnClose").onclick=()=>$("#pnDlg").close();
 /* Klick außerhalb der Patch Notes schließt das Fenster */
 $("#pnDlg").addEventListener("click",e=>{const r=$("#pnDlg").getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$("#pnDlg").close()});
